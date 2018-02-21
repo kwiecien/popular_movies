@@ -17,6 +17,10 @@ public class Movie {
         mUserRating = builder.mUserRating;
     }
 
+    public int getImageThumbnail() {
+        return mImageThumbnail;
+    }
+
     public static class Builder {
         private final String mTitle;
         private final LocalDate mReleaseDate;
