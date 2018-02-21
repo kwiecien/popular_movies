@@ -4,9 +4,14 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/list_item_movie_iv"
+        android:id="@+id/list_item_poster_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/list_item_movie_content_description" />
+
+    <TextView
+        android:id="@+id/list_item_title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </FrameLayout>

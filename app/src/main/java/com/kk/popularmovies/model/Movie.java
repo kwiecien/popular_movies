@@ -10,7 +10,7 @@ public class Movie {
     private final float mUserRating;
 
     private Movie(Builder builder) {
-        mTitle = builder.mPlotSynopsis;
+        mTitle = builder.mTitle;
         mReleaseDate = builder.mReleaseDate;
         mImageThumbnail = builder.mImageThumbnail;
         mPlotSynopsis = builder.mPlotSynopsis;
@@ -19,6 +19,10 @@ public class Movie {
 
     public int getImageThumbnail() {
         return mImageThumbnail;
+    }
+
+    public String getTitle() {
+        return mTitle;
     }
 
     public static class Builder {
@@ -31,6 +35,10 @@ public class Movie {
         public Builder(String title, LocalDate releaseDate) {
             mTitle = title;
             mReleaseDate = releaseDate;
+        }
+
+        public Movie build() {
+            return new Movie(this);
         }
 
         public Builder withImageThumbnail(int imageThumbnail) {

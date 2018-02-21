@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.kk.popularmovies.model.Movie;
 
@@ -26,11 +27,15 @@ public class MoviesAdapter extends ArrayAdapter<Movie> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_movie, parent, false);
         }
         Movie movie = getItem(position);
-        ImageView poster = convertView.findViewById(R.id.list_item_movie_iv);
 
+        ImageView posterIv = convertView.findViewById(R.id.list_item_poster_iv);
         int imageThumbnail = movie.getImageThumbnail();
-        poster.setImageResource(imageThumbnail); // TODO: Correct way of handling imageThumbnails
+        posterIv.setImageResource(imageThumbnail); // TODO: Correct way of handling imageThumbnails
 
-        return super.getView(position, convertView, parent);
+        TextView titleTv = convertView.findViewById(R.id.list_item_title_tv);
+        String title = movie.getTitle();
+        titleTv.setText(title);
+
+        return convertView;
     }
 }
