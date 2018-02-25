@@ -37,7 +37,8 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     @Override
-    public void onClick() {
+    public void onClick(int adapterPosition) {
         Toast.makeText(getActivity(), "Clicked!", Toast.LENGTH_SHORT).show();
+        startActivity(MovieDetailsActivity.newIntent(getActivity(), Integer.toString(adapterPosition)));
     }
 }
