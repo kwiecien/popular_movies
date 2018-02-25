@@ -1,5 +1,6 @@
 package com.kk.popularmovies;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,6 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.utilities.JsonUtils;
+import com.kk.popularmovies.utilities.NetworkUtils;
+
+import java.io.IOException;
+import java.net.URL;
 
 public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
@@ -33,12 +41,46 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         mMoviesAdapter = new MoviesAdapter(this);
         mRecyclerView.setAdapter(mMoviesAdapter);
 
+        loadMoviesData();
+
         return rootView;
+    }
+
+    private void loadMoviesData() {
+        showMoviesDataView();
+        new FetchMoviesAsyncTask().execute();
+    }
+
+    private void showMoviesDataView() {
+        mRecyclerView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onClick(int adapterPosition) {
         Toast.makeText(getActivity(), "Clicked!", Toast.LENGTH_SHORT).show();
         startActivity(MovieDetailsActivity.newIntent(getActivity(), Integer.toString(adapterPosition)));
+    }
+
+    private class FetchMoviesAsyncTask extends AsyncTask<Void, Void, Movie[]> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // TODO: loading indicator
+        }
+
+        @Override
+        protected Movie[] doInBackground(Void... voids) {
+            Movie[] movies = null;
+            String api_key = getResources().getString(R.string.API_KEY_TMDB);
+            URL moviesRequestUrl = NetworkUtils.buildUrl(NetworkUtils.SortOrder.POPULAR, api_key);
+            try {
+                String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
+                movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return movies;
+        }
     }
 }
