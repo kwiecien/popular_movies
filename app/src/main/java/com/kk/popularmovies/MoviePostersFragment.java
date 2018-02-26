@@ -16,7 +16,6 @@ import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.NetworkUtils;
 
-import java.io.IOException;
 import java.net.URL;
 
 public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
@@ -38,7 +37,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
-        mMoviesAdapter = new MoviesAdapter(this);
+        mMoviesAdapter = new MoviesAdapter(this, getContext());
         mRecyclerView.setAdapter(mMoviesAdapter);
 
         loadMoviesData();
@@ -61,6 +60,10 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         startActivity(MovieDetailsActivity.newIntent(getActivity(), Integer.toString(adapterPosition)));
     }
 
+    private void showErrorMessage() {
+        // TODO: Provide sensible implementation
+    }
+
     private class FetchMoviesAsyncTask extends AsyncTask<Void, Void, Movie[]> {
 
         @Override
@@ -77,10 +80,20 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
                 movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return movies;
+        }
+
+        @Override
+        protected void onPostExecute(Movie[] movies) {
+            if (movies != null) {
+                showMoviesDataView();
+                mMoviesAdapter.setMoviesData(movies);
+            } else {
+                showErrorMessage();
+            }
         }
     }
 }

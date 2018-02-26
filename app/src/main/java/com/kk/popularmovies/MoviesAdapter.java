@@ -9,25 +9,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kk.popularmovies.model.Movie;
-
-import java.time.LocalDate;
+import com.squareup.picasso.Picasso;
 
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdapterViewHolder> {
 
     private final MoviesAdapterOnClickHandler mClickHandler;
-    private Movie[] mMovies = {
-            new Movie.Builder("Test0", LocalDate.now()).build(),
-            new Movie.Builder("Test1", LocalDate.now()).build(),
-            new Movie.Builder("Test2", LocalDate.now()).build(),
-            new Movie.Builder("Test3", LocalDate.now()).build(),
-            new Movie.Builder("Test4", LocalDate.now()).build(),
-            new Movie.Builder("Test5", LocalDate.now()).build(),
-            new Movie.Builder("Test6", LocalDate.now()).build(),
-            new Movie.Builder("Test7", LocalDate.now()).build(),
-    };
+    private final Context mContext;
+    private Movie[] mMovies;
 
-    public MoviesAdapter(MoviesAdapterOnClickHandler clickHandler) {
+    public MoviesAdapter(MoviesAdapterOnClickHandler clickHandler, Context context) {
         mClickHandler = clickHandler;
+        mContext = context;
     }
 
     @Override
@@ -42,7 +34,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
     @Override
     public void onBindViewHolder(MoviesAdapterViewHolder moviesAdapterViewHolder, int position) {
-        moviesAdapterViewHolder.bind(position);
+        moviesAdapterViewHolder.bind(position, mContext);
     }
 
     @Override
@@ -51,6 +43,11 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
             return 0;
         }
         return mMovies.length;
+    }
+
+    public void setMoviesData(Movie[] movies) {
+        mMovies = movies;
+        notifyDataSetChanged();
     }
 
     public interface MoviesAdapterOnClickHandler {
@@ -68,11 +65,13 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
             itemView.setOnClickListener(this);
         }
 
-        public void bind(int position) {
+        public void bind(int position, Context context) {
             Movie movie = mMovies[position];
 
-            int imageThumbnail = movie.getImageThumbnail();
-            mPosterIv.setImageResource(imageThumbnail); // TODO: Correct way of handling imageThumbnails
+            String imageThumbnail = movie.getImageThumbnail();
+            Picasso.with(context)
+                    .load(imageThumbnail)
+                    .into(mPosterIv);
 
             String title = movie.getTitle();
             mTitleTv.setText(title);
