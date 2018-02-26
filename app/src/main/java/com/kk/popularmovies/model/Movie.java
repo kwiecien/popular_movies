@@ -1,8 +1,9 @@
 package com.kk.popularmovies.model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Movie {
+public class Movie implements Serializable {
     private final String mTitle;
     private final LocalDate mReleaseDate;
     private final String mImageThumbnail;
@@ -29,6 +30,18 @@ public class Movie {
 
     public String getTitle() {
         return mTitle;
+    }
+
+    public LocalDate getReleaseDate() {
+        return mReleaseDate;
+    }
+
+    public double getUserRating() {
+        return mUserRating;
+    }
+
+    public String getPlotSynopsis() {
+        return mPlotSynopsis;
     }
 
     public static class Builder {

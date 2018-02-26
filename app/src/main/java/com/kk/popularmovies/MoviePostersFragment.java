@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.utilities.JsonUtils;
@@ -55,9 +54,8 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     @Override
-    public void onClick(int adapterPosition) {
-        Toast.makeText(getActivity(), "Clicked!", Toast.LENGTH_SHORT).show();
-        startActivity(MovieDetailsActivity.newIntent(getActivity(), Integer.toString(adapterPosition)));
+    public void onClick(Movie movie) {
+        startActivity(MovieDetailsActivity.newIntent(getActivity(), movie));
     }
 
     private void showErrorMessage() {
