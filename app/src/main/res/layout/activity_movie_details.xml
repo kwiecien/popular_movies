@@ -47,4 +47,9 @@
         app:layout_constraintTop_toBottomOf="@+id/movie_details_release_date_tv"
         tools:text="8.7" />
 
+    <ImageView
+        android:id="@+id/movie_details_background_iv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </android.support.constraint.ConstraintLayout>
