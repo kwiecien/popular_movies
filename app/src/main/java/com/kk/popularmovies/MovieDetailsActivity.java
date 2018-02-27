@@ -36,7 +36,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         TextView plotSynopsisTv = findViewById(R.id.movie_details_plot_synopsis_tv);
         movieTv.setText(movie.getTitle());
         releaseDateTv.setText(movie.getReleaseDate().toString());
-        userRankingTv.setText(String.format(Locale.getDefault(), "%1.2f", movie.getUserRating()));
+        userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
         plotSynopsisTv.setText(movie.getPlotSynopsis());
         String imageThumbnail = movie.getImageThumbnail();
         ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
