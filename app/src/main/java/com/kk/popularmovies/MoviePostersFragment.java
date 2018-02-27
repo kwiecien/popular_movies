@@ -8,10 +8,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.model.SortOrder;
 import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.NetworkUtils;
 
@@ -21,6 +23,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
+    private SortOrder mSortOrder = SortOrder.POPULAR;
 
     public MoviePostersFragment() {
     }
@@ -41,12 +44,27 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
         loadMoviesData();
 
+        setHasOptionsMenu(true);
+
         return rootView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.sort_order_item:
+                mSortOrder = SortOrder.swap(mSortOrder);
+                item.setTitle(mSortOrder.getStringRepresentation());
+                loadMoviesData();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void loadMoviesData() {
         showMoviesDataView();
-        new FetchMoviesAsyncTask().execute();
+        new FetchMoviesAsyncTask().execute(mSortOrder);
     }
 
     private void showMoviesDataView() {
@@ -62,7 +80,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         // TODO: Provide sensible implementation
     }
 
-    private class FetchMoviesAsyncTask extends AsyncTask<Void, Void, Movie[]> {
+    private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
 
         @Override
         protected void onPreExecute() {
@@ -71,10 +89,10 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         }
 
         @Override
-        protected Movie[] doInBackground(Void... voids) {
+        protected Movie[] doInBackground(SortOrder... sortOrders) {
             Movie[] movies = null;
             String api_key = getResources().getString(R.string.API_KEY_TMDB);
-            URL moviesRequestUrl = NetworkUtils.buildUrl(NetworkUtils.SortOrder.POPULAR, api_key);
+            URL moviesRequestUrl = NetworkUtils.buildUrl(sortOrders[0], api_key);
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
                 movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);

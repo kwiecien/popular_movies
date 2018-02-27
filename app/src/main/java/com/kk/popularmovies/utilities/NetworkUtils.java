@@ -3,6 +3,8 @@ package com.kk.popularmovies.utilities;
 import android.net.Uri;
 import android.util.Log;
 
+import com.kk.popularmovies.model.SortOrder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -43,11 +45,6 @@ public class NetworkUtils {
                 return null;
             }
         }
-    }
-
-    public enum SortOrder {
-        TOP_RATED,
-        POPULAR
     }
 
 }
