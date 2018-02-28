@@ -35,7 +35,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         TextView userRankingTv = findViewById(R.id.movie_details_user_rating_tv);
         TextView plotSynopsisTv = findViewById(R.id.movie_details_plot_synopsis_tv);
         movieTv.setText(movie.getTitle());
-        releaseDateTv.setText(movie.getReleaseDate().toString());
+        releaseDateTv.setText(String.format(Locale.getDefault(), "(%d)", movie.getReleaseDate().getYear()));
         userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
         plotSynopsisTv.setText(movie.getPlotSynopsis());
         String imageThumbnail = movie.getImageThumbnail();
@@ -43,6 +43,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Picasso.with(this)
                 .load(imageThumbnail)
                 .into(backgroundImage);
-        backgroundImage.setAlpha(0.15f);
+        backgroundImage.setAlpha(0.10f);
     }
 }
