@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.SortOrder;
@@ -23,6 +25,8 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
+    private ProgressBar mLoadingIndicator;
+    private TextView mErrorMessageDisplay;
     private SortOrder mSortOrder = SortOrder.POPULAR;
 
     public MoviePostersFragment() {
@@ -32,8 +36,20 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_posters, container, false);
+        findViews(rootView);
+        prepareRecyclerView();
+        loadMoviesData();
+        setHasOptionsMenu(true);
+        return rootView;
+    }
 
+    private void findViews(View rootView) {
         mRecyclerView = rootView.findViewById(R.id.rv_movies);
+        mLoadingIndicator = rootView.findViewById(R.id.pb_loading_indicator);
+        mErrorMessageDisplay = rootView.findViewById(R.id.tv_error_message_display);
+    }
+
+    private void prepareRecyclerView() {
         int spanCount = 2;
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), spanCount);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -41,12 +57,21 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
         mMoviesAdapter = new MoviesAdapter(this, getContext());
         mRecyclerView.setAdapter(mMoviesAdapter);
+    }
 
-        loadMoviesData();
+    private void loadMoviesData() {
+        showMoviesDataView();
+        new FetchMoviesAsyncTask().execute(mSortOrder);
+    }
 
-        setHasOptionsMenu(true);
+    private void showMoviesDataView() {
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
 
-        return rootView;
+    private void showErrorMessage() {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -62,22 +87,9 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         }
     }
 
-    private void loadMoviesData() {
-        showMoviesDataView();
-        new FetchMoviesAsyncTask().execute(mSortOrder);
-    }
-
-    private void showMoviesDataView() {
-        mRecyclerView.setVisibility(View.VISIBLE);
-    }
-
     @Override
     public void onClick(Movie movie) {
         startActivity(MovieDetailsActivity.newIntent(getActivity(), movie));
-    }
-
-    private void showErrorMessage() {
-        // TODO: Provide sensible implementation
     }
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
@@ -85,7 +97,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // TODO: loading indicator
+            mLoadingIndicator.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -104,6 +116,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
         @Override
         protected void onPostExecute(Movie[] movies) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (movies != null) {
                 showMoviesDataView();
                 mMoviesAdapter.setMoviesData(movies);
