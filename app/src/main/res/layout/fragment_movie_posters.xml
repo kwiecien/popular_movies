@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
         android:padding="16dp"
-        android:text="An error has occured.\nAre you connected to the Internet?"
+        android:text="@string/error_no_internet"
         android:textSize="20sp"
         android:visibility="invisible" />
 

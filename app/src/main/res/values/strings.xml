@@ -3,4 +3,5 @@
     <string name="list_item_movie_content_description">Movie\'s poster</string>
     <string name="background_image">Background image</string>
     <string name="sort_order">Sort order</string>
+    <string name="error_no_internet">An error has occurred.\nAre you connected to the Internet?</string>
 </resources>
