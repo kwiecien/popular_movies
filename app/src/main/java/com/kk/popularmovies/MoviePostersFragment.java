@@ -1,16 +1,21 @@
 package com.kk.popularmovies;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -20,6 +25,7 @@ import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.NetworkUtils;
 
 import java.net.URL;
+import java.util.Arrays;
 
 public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
@@ -50,13 +56,21 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     private void prepareRecyclerView() {
-        int spanCount = 2;
+        int spanCount = calculateNumberOfColumns(getActivity());
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), spanCount);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
         mMoviesAdapter = new MoviesAdapter(this, getContext());
         mRecyclerView.setAdapter(mMoviesAdapter);
+    }
+
+    private int calculateNumberOfColumns(Context context) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        int scalingDpFactor = 185;
+        int numberOfColumns = (int) (dpWidth / scalingDpFactor);
+        return numberOfColumns > 2 ? numberOfColumns : 2;
     }
 
     private void loadMoviesData() {
@@ -88,8 +102,10 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     @Override
-    public void onClick(Movie movie) {
-        startActivity(MovieDetailsActivity.newIntent(getActivity(), movie));
+    public void onClick(Movie movie, ImageView sharedImageView) {
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                getActivity(), sharedImageView, ViewCompat.getTransitionName(sharedImageView));
+        startActivity(MovieDetailsActivity.newIntent(getActivity(), movie), options.toBundle());
     }
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
@@ -119,7 +135,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (movies != null) {
                 showMoviesDataView();
-                mMoviesAdapter.setMoviesData(movies);
+                mMoviesAdapter.setMoviesData(Arrays.asList(movies));
             } else {
                 showErrorMessage();
             }
