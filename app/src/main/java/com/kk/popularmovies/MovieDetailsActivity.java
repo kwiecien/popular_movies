@@ -48,9 +48,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
         supportPostponeEnterTransition();
 
         Intent intent = getIntent();
-        Bundle extras = intent != null ? intent.getExtras() : null;
-        String transitionName = Optional.ofNullable(extras).map(e -> e.getString(EXTRA_TRANSITION)).orElse(null);
-        Movie movie = extras != null ? (Movie) extras.getSerializable(EXTRA_MOVIE) : null;
+        Bundle extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
+        String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
+        Movie movie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
         if (movie != null) {
             ButterKnife.bind(this);
             movieTv.setText(movie.getTitle());
