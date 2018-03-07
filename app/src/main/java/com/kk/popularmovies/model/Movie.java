@@ -1,11 +1,11 @@
 package com.kk.popularmovies.model;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.util.Date;
 
 public class Movie implements Serializable {
     private final String mTitle;
-    private final LocalDate mReleaseDate;
+    private final Date mReleaseDate;
     private final String mImageThumbnail;
     private final String mPlotSynopsis;
     private final double mUserRating;
@@ -32,7 +32,7 @@ public class Movie implements Serializable {
         return mTitle;
     }
 
-    public LocalDate getReleaseDate() {
+    public Date getReleaseDate() {
         return mReleaseDate;
     }
 
@@ -46,12 +46,12 @@ public class Movie implements Serializable {
 
     public static class Builder {
         private final String mTitle;
-        private final LocalDate mReleaseDate;
+        private final Date mReleaseDate;
         private String mPosterPath = "";
         private String mPlotSynopsis = "";
         private double mUserRating = 0.0f;
 
-        public Builder(String title, LocalDate releaseDate) {
+        public Builder(String title, Date releaseDate) {
             mTitle = title;
             mReleaseDate = releaseDate;
         }

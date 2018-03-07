@@ -11,6 +11,7 @@ import com.kk.popularmovies.model.Movie;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -53,7 +54,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         if (movie != null) {
             ButterKnife.bind(this);
             movieTv.setText(movie.getTitle());
-            releaseDateTv.setText(String.format(Locale.getDefault(), "(%d)", movie.getReleaseDate().getYear()));
+            releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(movie)));
             userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
             plotSynopsisTv.setText(movie.getPlotSynopsis());
             String imageThumbnail = movie.getImageThumbnail();
@@ -75,5 +76,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
                         }
                     });
         }
+    }
+
+    private String getReleaseYear(Movie movie) {
+        return new SimpleDateFormat("YYYY", Locale.getDefault()).format(movie.getReleaseDate());
     }
 }

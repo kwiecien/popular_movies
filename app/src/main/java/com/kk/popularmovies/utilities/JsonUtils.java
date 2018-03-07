@@ -6,7 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.time.LocalDate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class JsonUtils {
     private static final String VOTE_AVERAGE = "vote_average";
@@ -25,8 +28,9 @@ public class JsonUtils {
             String title = movieJson.getString(TITLE);
             String overview = movieJson.getString(OVERVIEW);
             String releaseDate = movieJson.getString(RELEASE_DATE);
+            Date parsedDate = parseDate(releaseDate);
             String posterPath = movieJson.getString(POSTER_PATH);
-            Movie movie = new Movie.Builder(title, LocalDate.parse(releaseDate))
+            Movie movie = new Movie.Builder(title, parsedDate)
                     .withPosterPath(posterPath)
                     .withUserRating(voteAverage)
                     .withPlotSynopsis(overview)
@@ -34,5 +38,16 @@ public class JsonUtils {
             movies[i] = movie;
         }
         return movies;
+    }
+
+    private static Date parseDate(String releaseDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date parsedDate = null;
+        try {
+            parsedDate = dateFormat.parse(releaseDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return parsedDate;
     }
 }
