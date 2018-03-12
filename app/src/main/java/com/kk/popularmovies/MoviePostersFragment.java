@@ -1,12 +1,14 @@
 package com.kk.popularmovies;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,8 +29,10 @@ import com.kk.popularmovies.utilities.NetworkUtils;
 import java.net.URL;
 import java.util.Arrays;
 
-public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
+public class MoviePostersFragment extends Fragment
+        implements MoviesAdapter.MoviesAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Movie[]> {
 
+    private static final int MOVIE_POSTERS_LOADER_ID = 1000;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
@@ -44,8 +48,9 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         View rootView = inflater.inflate(R.layout.fragment_movie_posters, container, false);
         findViews(rootView);
         prepareRecyclerView();
-        loadMoviesData();
+        showMoviesDataView();
         setHasOptionsMenu(true);
+        getActivity().getSupportLoaderManager().initLoader(MOVIE_POSTERS_LOADER_ID, null, this);
         return rootView;
     }
 
@@ -75,7 +80,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
     private void loadMoviesData() {
         showMoviesDataView();
-        new FetchMoviesAsyncTask().execute(mSortOrder);
+        getActivity().getSupportLoaderManager().restartLoader(MOVIE_POSTERS_LOADER_ID, null, this);
     }
 
     private void showMoviesDataView() {
@@ -108,37 +113,68 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         startActivity(MovieDetailsActivity.newIntent(getActivity(), movie), options.toBundle());
     }
 
-    private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
+    @NonNull
+    @Override
+    public Loader<Movie[]> onCreateLoader(int id, @Nullable Bundle args) {
+        return new MoviesAsyncTaskLoader(getActivity(), mLoadingIndicator, mSortOrder);
+    }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
+    @Override
+    public void onLoadFinished(@NonNull Loader<Movie[]> loader, Movie[] data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mMoviesAdapter.setMoviesData(Arrays.asList(data));
+        if (data != null) {
+            showMoviesDataView();
+        } else {
+            showErrorMessage();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Movie[]> loader) {
+        // Don't needed
+    }
+
+    private static class MoviesAsyncTaskLoader extends AsyncTaskLoader<Movie[]> {
+        private Movie[] mMovies = null;
+        private ProgressBar mLoadingIndicator;
+        private SortOrder mSortOrder;
+
+        public MoviesAsyncTaskLoader(@NonNull Context context, ProgressBar loadingIndicator, SortOrder sortOrder) {
+            super(context);
+            mLoadingIndicator = loadingIndicator;
+            mSortOrder = sortOrder;
         }
 
         @Override
-        protected Movie[] doInBackground(SortOrder... sortOrders) {
-            Movie[] movies = null;
-            String api_key = getResources().getString(R.string.API_KEY_TMDB);
-            URL moviesRequestUrl = NetworkUtils.buildUrl(sortOrders[0], api_key);
+        protected void onStartLoading() {
+            if (mMovies != null) {
+                deliverResult(mMovies);
+            } else {
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                forceLoad();
+            }
+        }
+
+        @Override
+        public void deliverResult(@Nullable Movie[] data) {
+            mMovies = data;
+            super.deliverResult(data);
+        }
+
+        @Nullable
+        @Override
+        public Movie[] loadInBackground() {
+            String api_key = getContext().getResources().getString(R.string.API_KEY_TMDB);
+            URL moviesRequestUrl = NetworkUtils.buildUrl(mSortOrder, api_key);
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
-                movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
+                mMovies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return movies;
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movies != null) {
-                showMoviesDataView();
-                mMoviesAdapter.setMoviesData(Arrays.asList(movies));
-            } else {
-                showErrorMessage();
-            }
+            return mMovies;
         }
     }
+
 }
