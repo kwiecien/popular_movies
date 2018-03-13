@@ -25,9 +25,13 @@ import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.NetworkUtils;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
+
+    private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
 
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
@@ -43,10 +47,26 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_posters, container, false);
         findViews(rootView);
-        prepareRecyclerView();
-        loadMoviesData();
         setHasOptionsMenu(true);
+        prepareRecyclerView();
+        showMoviesDataView();
+        if (savedInstanceState != null) {
+            @SuppressWarnings("unchecked")
+            List<Movie> movies = (List<Movie>) savedInstanceState.getSerializable(EXTRA_MOVIES);
+            showMoviesOrError(movies);
+        } else {
+            loadMoviesData();
+        }
         return rootView;
+    }
+
+    private void showMoviesOrError(List<Movie> movies) {
+        if (movies != null) {
+            showMoviesDataView();
+            mMoviesAdapter.setMoviesData(movies);
+        } else {
+            showErrorMessage();
+        }
     }
 
     private void findViews(View rootView) {
@@ -74,7 +94,6 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     private void loadMoviesData() {
-        showMoviesDataView();
         new FetchMoviesAsyncTask().execute(mSortOrder);
     }
 
@@ -106,6 +125,12 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 getActivity(), sharedImageView, ViewCompat.getTransitionName(sharedImageView));
         startActivity(MovieDetailsActivity.newIntent(getActivity(), movie), options.toBundle());
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putSerializable(EXTRA_MOVIES, mMoviesAdapter.getMovies() != null ? new ArrayList<>(mMoviesAdapter.getMovies()) : null);
+        super.onSaveInstanceState(outState);
     }
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {

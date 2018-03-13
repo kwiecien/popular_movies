@@ -54,6 +54,10 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         notifyDataSetChanged();
     }
 
+    public List<Movie> getMovies() {
+        return mMovies;
+    }
+
     public interface MoviesAdapterOnClickHandler {
         void onClick(Movie movie, ImageView sharedImageView);
     }

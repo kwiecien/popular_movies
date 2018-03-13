@@ -33,6 +33,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     @BindView(R.id.movie_details_plot_synopsis_tv)
     TextView plotSynopsisTv;
 
+    private Movie movie;
+
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
         Bundle bundle = new Bundle();
@@ -46,38 +48,55 @@ public class MovieDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
+        ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         supportPostponeEnterTransition();
 
-        Intent intent = getIntent();
-        Bundle extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
-        String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
-        Movie movie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
-        if (movie != null) {
-            ButterKnife.bind(this);
-            movieTv.setText(movie.getTitle());
-            releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(movie)));
-            userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
-            plotSynopsisTv.setText(movie.getPlotSynopsis());
-            String imageThumbnail = movie.getImageThumbnail();
-            ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
-            backgroundImage.setTransitionName(transitionName);
-            Picasso.with(this)
-                    .load(imageThumbnail)
-                    .noFade()
-                    .into(backgroundImage, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            supportStartPostponedEnterTransition();
-                            backgroundImage.setAlpha(0.10f);
-                        }
-
-                        @Override
-                        public void onError() {
-                            supportStartPostponedEnterTransition();
-                        }
-                    });
+        Bundle extras = null;
+        if (savedInstanceState != null) {
+            movie = (Movie) savedInstanceState.getSerializable(EXTRA_MOVIE);
+        } else {
+            Intent intent = getIntent();
+            extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
+            movie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
         }
+        if (movie != null) {
+            setTextViews(movie);
+            setBackgroundImage(extras, movie);
+        }
+    }
+
+    private void setTextViews(Movie movie) {
+        movieTv.setText(movie.getTitle());
+        releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(movie)));
+        userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
+        plotSynopsisTv.setText(movie.getPlotSynopsis());
+    }
+
+    private void setBackgroundImage(Bundle extras, Movie movie) {
+        String imageThumbnail = movie.getImageThumbnail();
+        ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
+        displayBackgroundImage(extras, imageThumbnail, backgroundImage);
+    }
+
+    private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
+        String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
+        backgroundImage.setTransitionName(transitionName);
+        Picasso.with(this)
+                .load(imageThumbnail)
+                .noFade()
+                .into(backgroundImage, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        supportStartPostponedEnterTransition();
+                        backgroundImage.setAlpha(0.10f);
+                    }
+
+                    @Override
+                    public void onError() {
+                        supportStartPostponedEnterTransition();
+                    }
+                });
     }
 
     private String getReleaseYear(Movie movie) {
@@ -92,5 +111,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(EXTRA_MOVIE, movie);
+        super.onSaveInstanceState(outState);
     }
 }
