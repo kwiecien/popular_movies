@@ -1,6 +1,7 @@
 package com.kk.popularmovies;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -37,7 +39,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessageDisplay;
-    private SortOrder mSortOrder = SortOrder.POPULAR;
+    private SortOrder mSortOrder;
 
     public MoviePostersFragment() {
     }
@@ -50,23 +52,16 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         setHasOptionsMenu(true);
         prepareRecyclerView();
         showMoviesDataView();
+        SortOrder defaultSortOrder = retrieveDefaultSortOrder();
+        mSortOrder = defaultSortOrder;
         if (savedInstanceState != null) {
             @SuppressWarnings("unchecked")
             List<Movie> movies = (List<Movie>) savedInstanceState.getSerializable(EXTRA_MOVIES);
             showMoviesOrError(movies);
         } else {
-            loadMoviesData();
+            loadMoviesData(defaultSortOrder);
         }
         return rootView;
-    }
-
-    private void showMoviesOrError(List<Movie> movies) {
-        if (movies != null) {
-            showMoviesDataView();
-            mMoviesAdapter.setMoviesData(movies);
-        } else {
-            showErrorMessage();
-        }
     }
 
     private void findViews(View rootView) {
@@ -93,13 +88,30 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         return numberOfColumns > 2 ? numberOfColumns : 2;
     }
 
-    private void loadMoviesData() {
-        new FetchMoviesAsyncTask().execute(mSortOrder);
-    }
-
     private void showMoviesDataView() {
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private SortOrder retrieveDefaultSortOrder() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String defaultSortOrder = preferences.getString(getResources().getString(R.string.sort_order_key), "");
+        return defaultSortOrder.equals(getResources().getString(R.string.pref_sort_popular)) ?
+                SortOrder.POPULAR :
+                SortOrder.TOP_RATED;
+    }
+
+    private void loadMoviesData(SortOrder sortOrder) {
+        new FetchMoviesAsyncTask().execute(sortOrder);
+    }
+
+    private void showMoviesOrError(List<Movie> movies) {
+        if (movies != null) {
+            showMoviesDataView();
+            mMoviesAdapter.setMoviesData(movies);
+        } else {
+            showErrorMessage();
+        }
     }
 
     private void showErrorMessage() {
@@ -113,8 +125,10 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
             case R.id.sort_order_item:
                 mSortOrder = SortOrder.swap(mSortOrder);
                 item.setTitle(mSortOrder.getStringRepresentation());
-                loadMoviesData();
+                loadMoviesData(mSortOrder);
                 return true;
+            case R.id.action_settings:
+                startActivity(SettingsActivity.newIntent(getActivity()));
             default:
                 return super.onOptionsItemSelected(item);
         }

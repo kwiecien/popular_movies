@@ -1,7 +1,18 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+
     <string name="list_item_movie_content_description">Movie\'s poster</string>
     <string name="background_image">Background image</string>
-    <string name="sort_order">Sort order</string>
+
     <string name="error_no_internet">An error has occurred.\nAre you connected to the Internet?</string>
+
+    <string name="sort_order">Sort order</string>
+    <string name="pref_sort_label_popular">Popular</string>
+    <string name="pref_sort_label_top_rated">Top Rated</string>
+    <string name="pref_sort_popular" translatable="false">popular</string>
+    <string name="pref_sort_top_rated" translatable="false">top rated</string>
+    <string name="pref_sort_default" translatable="false">@string/pref_sort_popular</string>
+    <string name="settings">Settings</string>
+    <string name="sort_order_key">sort_order_key</string>
+    <string name="default_sort_order">Default Sort Order</string>
 </resources>
