@@ -12,10 +12,24 @@ public enum SortOrder {
         public String getStringRepresentation() {
             return "POPULAR";
         }
+    },
+    FAVORITES {
+        @Override
+        public String getStringRepresentation() {
+            return "FAVORITES";
+        }
     };
 
     public static SortOrder swap(SortOrder sortOrder) {
-        return sortOrder == TOP_RATED ? POPULAR : TOP_RATED;
+        switch (sortOrder) {
+            case TOP_RATED:
+                return POPULAR;
+            case POPULAR:
+                return FAVORITES;
+            case FAVORITES:
+                return TOP_RATED;
+        }
+        throw new IllegalArgumentException("Unknown SortOrder!");
     }
 
     public abstract String getStringRepresentation();

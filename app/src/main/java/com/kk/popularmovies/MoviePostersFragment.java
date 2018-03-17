@@ -104,6 +104,18 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     }
 
     private void loadMoviesData(SortOrder sortOrder) {
+        if (sortOrder == SortOrder.FAVORITES) {
+            loadMoviesDataFromDatabase();
+        } else {
+            loadMoviesDataFromInternet(sortOrder);
+        }
+    }
+
+    private void loadMoviesDataFromDatabase() {
+        // TODO Proviede sensible implementation
+    }
+
+    private void loadMoviesDataFromInternet(SortOrder sortOrder) {
         new FetchMoviesAsyncTask().execute(sortOrder);
     }
 
