@@ -4,8 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_ID;
+import static android.provider.BaseColumns._ID;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_RELEASE_DATE;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_TITLE;
@@ -26,12 +27,14 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_MOVIE_TABLE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
-                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL, " +
+                        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                         COLUMN_TITLE + " TEXT NOT NULL, " +
                         COLUMN_RELEASE_DATE + " DATE NOT NULL, " +
-                        COLUMN_IMAGE_THUMBNAIL + "TEXT , " +
-                        COLUMN_PLOT_SYNOPSIS + "TEXT , " +
-                        COLUMN_USER_RATING + "REAL" +
+                        COLUMN_IMAGE_THUMBNAIL + "TEXT, " +
+                        COLUMN_PLOT_SYNOPSIS + "TEXT, " +
+                        COLUMN_USER_RATING + "REAL, " +
+                        "UNIQUE (" + COLUMN_MOVIE_ID + ") ON CONFLICT ROLLBACK" +
                         ");";
         db.execSQL(SQL_CREATE_MOVIE_TABLE);
     }
