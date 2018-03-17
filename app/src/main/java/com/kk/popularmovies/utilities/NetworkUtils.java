@@ -16,11 +16,13 @@ public class NetworkUtils {
     private static final String TAG = NetworkUtils.class.getSimpleName();
     private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     private static final String API_KEY_PARAM = "api_key";
+    private static final String TRAILERS_PARAM = "videos";
+    private static final String REVIEWS_PARAM = "reviews";
 
     private NetworkUtils() {
     }
 
-    public static URL buildUrl(SortOrder sortOrder, String apiKey) {
+    public static URL buildMoviesUrl(SortOrder sortOrder, String apiKey) {
         Uri uri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
                 .appendPath(sortOrder.toString().toLowerCase())
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
@@ -32,8 +34,44 @@ public class NetworkUtils {
         } catch (MalformedURLException e) {
             Log.e(TAG, e.getLocalizedMessage());
         }
-        Log.v(TAG, "Built URI " + url);
+        logBuiltUri(url);
         return url;
+    }
+
+    public static URL buildTrailersUrl(long id, String apiKey) {
+        Uri uri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                .appendPath(Long.toString(id))
+                .appendPath(TRAILERS_PARAM)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+        logBuiltUri(url);
+        return url;
+    }
+
+    public static URL buildReviewsUrl(long id, String apiKey) {
+        Uri uri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                .appendPath(Long.toString(id))
+                .appendPath(REVIEWS_PARAM)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+        logBuiltUri(url);
+        return url;
+    }
+
+    private static void logBuiltUri(URL url) {
+        Log.v(TAG, "Built URI " + url);
     }
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {

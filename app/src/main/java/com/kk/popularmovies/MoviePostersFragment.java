@@ -163,7 +163,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         protected Movie[] doInBackground(SortOrder... sortOrders) {
             Movie[] movies = null;
             String apiKey = getResources().getString(R.string.API_KEY_TMDB);
-            URL moviesRequestUrl = NetworkUtils.buildUrl(sortOrders[0], apiKey);
+            URL moviesRequestUrl = NetworkUtils.buildMoviesUrl(sortOrders[0], apiKey);
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
                 movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);

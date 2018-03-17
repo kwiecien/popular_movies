@@ -7,3 +7,13 @@
 /build
 /captures
 .externalNativeBuild
+/.idea/checkstyleidea-libs/readme.txt
+.idea/checkstyle-idea.xml
+.idea/checkstyleidea-libs/
+.idea/dbnavigator.xml
+.idea/markdown-navigator.xml
+.idea/markdown-navigator/
+.idea/saveactions_settings.xml
+.idea/shelf/
+.idea/sonarlint/
+app/libs/
