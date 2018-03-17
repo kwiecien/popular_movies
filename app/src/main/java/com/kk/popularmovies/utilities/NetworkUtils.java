@@ -17,6 +17,8 @@ public class NetworkUtils {
     private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     private static final String API_KEY_PARAM = "api_key";
 
+    private NetworkUtils() {
+    }
 
     public static URL buildUrl(SortOrder sortOrder, String apiKey) {
         Uri uri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
@@ -28,7 +30,7 @@ public class NetworkUtils {
         try {
             url = new URL(uri.toString());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getLocalizedMessage());
         }
         Log.v(TAG, "Built URI " + url);
         return url;
@@ -37,7 +39,7 @@ public class NetworkUtils {
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try (InputStream in = urlConnection.getInputStream()) {
-            Scanner scanner = new Scanner(in);
+            Scanner scanner = new Scanner(in, "UTF-8");
             scanner.useDelimiter("\\A");
             if (scanner.hasNext()) {
                 return scanner.next();

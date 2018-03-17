@@ -1,5 +1,7 @@
 package com.kk.popularmovies.utilities;
 
+import android.util.Log;
+
 import com.kk.popularmovies.model.Movie;
 
 import org.json.JSONArray;
@@ -17,6 +19,10 @@ public class JsonUtils {
     private static final String OVERVIEW = "overview";
     private static final String RELEASE_DATE = "release_date";
     private static final String POSTER_PATH = "poster_path";
+    private static final String TAG = JsonUtils.class.getSimpleName();
+
+    private JsonUtils() {
+    }
 
     public static Movie[] getMoviesFromJson(String jsonMoviesResponse) throws JSONException {
         JSONObject moviesJson = new JSONObject(jsonMoviesResponse);
@@ -46,7 +52,7 @@ public class JsonUtils {
         try {
             parsedDate = dateFormat.parse(releaseDate);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getLocalizedMessage());
         }
         return parsedDate;
     }

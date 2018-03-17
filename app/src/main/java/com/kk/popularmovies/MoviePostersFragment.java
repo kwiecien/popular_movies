@@ -13,6 +13,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -129,6 +130,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
                 return true;
             case R.id.action_settings:
                 startActivity(SettingsActivity.newIntent(getActivity()));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -149,6 +151,8 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
 
+        private final String TAG = FetchMoviesAsyncTask.class.getSimpleName();
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -158,13 +162,13 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
         @Override
         protected Movie[] doInBackground(SortOrder... sortOrders) {
             Movie[] movies = null;
-            String api_key = getResources().getString(R.string.API_KEY_TMDB);
-            URL moviesRequestUrl = NetworkUtils.buildUrl(sortOrders[0], api_key);
+            String apiKey = getResources().getString(R.string.API_KEY_TMDB);
+            URL moviesRequestUrl = NetworkUtils.buildUrl(sortOrders[0], apiKey);
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
                 movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, e.getLocalizedMessage());
             }
             return movies;
         }

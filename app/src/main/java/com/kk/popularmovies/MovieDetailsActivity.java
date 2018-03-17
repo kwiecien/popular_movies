@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kk.popularmovies.model.Movie;
 import com.squareup.picasso.Callback;
@@ -15,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +34,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     TextView userRankingTv;
     @BindView(R.id.movie_details_plot_synopsis_tv)
     TextView plotSynopsisTv;
+    @BindView(R.id.movie_details_star_iv)
+    ImageView starTv;
 
     private Movie movie;
 
@@ -61,16 +65,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
             movie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
         }
         if (movie != null) {
-            setTextViews(movie);
+            setViewsContent(movie);
             setBackgroundImage(extras, movie);
+            starTv.setOnClickListener(
+                    v -> Toast.makeText(this, "Star clicked", Toast.LENGTH_SHORT).show()
+            );
         }
     }
 
-    private void setTextViews(Movie movie) {
+    private void setViewsContent(Movie movie) {
         movieTv.setText(movie.getTitle());
         releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(movie)));
         userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
         plotSynopsisTv.setText(movie.getPlotSynopsis());
+        starTv.setImageResource(determineIfFavorite(movie.getTitle()));
+    }
+
+    private int determineIfFavorite(String title) {
+        return ThreadLocalRandom.current().nextInt(2) % 2 == 0 ?
+                android.R.drawable.star_big_on :
+                android.R.drawable.star_big_off; // TODO Set star according to true data
     }
 
     private void setBackgroundImage(Bundle extras, Movie movie) {
@@ -100,7 +114,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private String getReleaseYear(Movie movie) {
-        return new SimpleDateFormat("YYYY", Locale.getDefault()).format(movie.getReleaseDate());
+        return new SimpleDateFormat("yyyy", Locale.getDefault()).format(movie.getReleaseDate());
     }
 
     @Override
@@ -109,6 +123,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             case android.R.id.home:
                 onBackPressed();
                 break;
+            default:
         }
         return super.onOptionsItemSelected(item);
     }

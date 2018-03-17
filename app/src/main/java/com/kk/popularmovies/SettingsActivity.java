@@ -26,6 +26,8 @@ public class SettingsActivity extends AppCompatActivity {
             case android.R.id.home:
                 onBackPressed();
                 break;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

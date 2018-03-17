@@ -54,6 +54,15 @@
                     android:textSize="56sp"
                     tools:text="8.7" />
 
+                <ImageView
+                    android:id="@+id/movie_details_star_iv"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="2"
+                    android:contentDescription="@string/star_favorite_button"
+                    tools:src="@android:drawable/star_big_off" />
+
 
             </LinearLayout>
 
