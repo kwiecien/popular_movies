@@ -77,6 +77,65 @@
                 app:layout_constraintTop_toBottomOf="@+id/movie_details_user_rating_tv"
                 tools:text="Plot synopsis" />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_margin="16dp"
+                android:background="@android:color/white" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:paddingEnd="16dp"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:text="Trailers" />
+
+            <LinearLayout
+                android:id="@+id/trailers_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Add trailers dynamically -->
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_margin="16dp"
+                android:background="@android:color/white" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:paddingEnd="16dp"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:text="Reviews" />
+
+            <android.support.v4.widget.NestedScrollView
+
+                android:layout_width="match_parent"
+                android:layout_height="112dp">
+
+                <LinearLayout
+                    android:id="@+id/reviews_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Add reviews dynamically -->
+
+                </LinearLayout>
+
+            </android.support.v4.widget.NestedScrollView>
+
         </LinearLayout>
 
     </ScrollView>

@@ -43,6 +43,7 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     private SortOrder mSortOrder;
 
     public MoviePostersFragment() {
+        // Default constructor to suppress lint
     }
 
     @Nullable

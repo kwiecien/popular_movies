@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
     TextView plotSynopsisTv;
     @BindView(R.id.movie_details_star_iv)
     ImageView starTv;
+    @BindView(R.id.reviews_ll)
+    LinearLayout reviewsLl;
+    @BindView(R.id.trailers_ll)
+    LinearLayout trailers_ll;
 
     private Movie movie;
 
@@ -53,7 +58,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Optional.ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
         supportPostponeEnterTransition();
 
         Bundle extras = null;
@@ -67,9 +72,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         if (movie != null) {
             setViewsContent(movie);
             setBackgroundImage(extras, movie);
-            starTv.setOnClickListener(
-                    v -> Toast.makeText(this, "Star clicked", Toast.LENGTH_SHORT).show()
-            );
+            setOnClickListeners();
         }
     }
 
@@ -79,6 +82,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
         plotSynopsisTv.setText(movie.getPlotSynopsis());
         starTv.setImageResource(determineIfFavorite(movie.getTitle()));
+        setReviews();
+        setTrailers();
     }
 
     private int determineIfFavorite(String title) {
@@ -87,10 +92,34 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 android.R.drawable.star_big_off; // TODO Set star according to true data
     }
 
+    private void setReviews() {
+        TextView textView1 = new TextView(this);
+        textView1.setText("Review 1\nReview 1\nReview 1\nReview 1\n");
+        TextView textView2 = new TextView(this);
+        textView2.setText("Review 2\nReview 2\nReview 2\nReview 2\n");
+        reviewsLl.addView(textView1);
+        reviewsLl.addView(textView2);
+    }
+
+    private void setTrailers() {
+        TextView textView1 = new TextView(this);
+        textView1.setText("Trailer 1");
+        TextView textView2 = new TextView(this);
+        textView2.setText("Trailer 2");
+        trailers_ll.addView(textView1);
+        trailers_ll.addView(textView2);
+    }
+
     private void setBackgroundImage(Bundle extras, Movie movie) {
         String imageThumbnail = movie.getImageThumbnail();
         ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
         displayBackgroundImage(extras, imageThumbnail, backgroundImage);
+    }
+
+    private void setOnClickListeners() {
+        starTv.setOnClickListener(
+                v -> Toast.makeText(this, "Star clicked", Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {

@@ -19,6 +19,7 @@ import java.util.Locale;
 
 public class JsonUtils {
     private static final String VOTE_AVERAGE = "vote_average";
+    private static final String ID = "id";
     private static final String TITLE = "title";
     private static final String OVERVIEW = "overview";
     private static final String RELEASE_DATE = "release_date";
@@ -40,12 +41,13 @@ public class JsonUtils {
         for (int i = 0; i < results.length(); i++) {
             JSONObject movieJson = results.getJSONObject(i);
             double voteAverage = movieJson.getDouble(VOTE_AVERAGE);
+            long id = movieJson.getLong(ID);
             String title = movieJson.getString(TITLE);
             String overview = movieJson.getString(OVERVIEW);
             String releaseDate = movieJson.getString(RELEASE_DATE);
             Date parsedDate = parseDate(releaseDate);
             String posterPath = movieJson.getString(POSTER_PATH);
-            Movie movie = new Movie.Builder(title, parsedDate)
+            Movie movie = new Movie.Builder(id, title, parsedDate)
                     .withPosterPath(posterPath)
                     .withUserRating(voteAverage)
                     .withPlotSynopsis(overview)

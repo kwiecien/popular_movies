@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Movie implements Serializable {
+    private final long mId;
     private final String mTitle;
     private final Date mReleaseDate;
     private final String mImageThumbnail;
@@ -11,6 +12,7 @@ public class Movie implements Serializable {
     private final double mUserRating;
 
     private Movie(Builder builder) {
+        mId = builder.mId;
         mTitle = builder.mTitle;
         mReleaseDate = builder.mReleaseDate;
         mPlotSynopsis = builder.mPlotSynopsis;
@@ -54,13 +56,15 @@ public class Movie implements Serializable {
     }
 
     public static class Builder {
+        private final long mId;
         private final String mTitle;
         private final Date mReleaseDate;
         private String mPosterPath = "";
         private String mPlotSynopsis = "";
         private double mUserRating = 0.0f;
 
-        public Builder(String title, Date releaseDate) {
+        public Builder(long id, String title, Date releaseDate) {
+            mId = id;
             mTitle = title;
             mReleaseDate = releaseDate;
         }
