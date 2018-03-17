@@ -44,6 +44,15 @@ public class Movie implements Serializable {
         return mPlotSynopsis;
     }
 
+    @Override
+    public String toString() {
+        return "Movie{" +
+                "mTitle='" + mTitle + '\'' +
+                ", mReleaseDate=" + mReleaseDate +
+                ", mUserRating=" + mUserRating +
+                '}';
+    }
+
     public static class Builder {
         private final String mTitle;
         private final Date mReleaseDate;
