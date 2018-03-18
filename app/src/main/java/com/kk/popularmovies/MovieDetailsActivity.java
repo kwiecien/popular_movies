@@ -1,7 +1,9 @@
 package com.kk.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -22,6 +24,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_RELEASE_DATE;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_TITLE;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_USER_RATING;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.CONTENT_URI;
+
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
@@ -40,9 +50,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
     @BindView(R.id.reviews_ll)
     LinearLayout reviewsLl;
     @BindView(R.id.trailers_ll)
-    LinearLayout trailers_ll;
+    LinearLayout trailersLl;
 
-    private Movie movie;
+    private Movie mMovie;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -63,15 +73,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         Bundle extras = null;
         if (savedInstanceState != null) {
-            movie = (Movie) savedInstanceState.getSerializable(EXTRA_MOVIE);
+            mMovie = (Movie) savedInstanceState.getSerializable(EXTRA_MOVIE);
         } else {
             Intent intent = getIntent();
             extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
-            movie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
+            mMovie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
         }
-        if (movie != null) {
-            setViewsContent(movie);
-            setBackgroundImage(extras, movie);
+        if (mMovie != null) {
+            setViewsContent(mMovie);
+            setBackgroundImage(extras, mMovie);
             setOnClickListeners();
         }
     }
@@ -106,8 +116,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         textView1.setText("Trailer 1");
         TextView textView2 = new TextView(this);
         textView2.setText("Trailer 2");
-        trailers_ll.addView(textView1);
-        trailers_ll.addView(textView2);
+        trailersLl.addView(textView1);
+        trailersLl.addView(textView2);
     }
 
     private void setBackgroundImage(Bundle extras, Movie movie) {
@@ -118,8 +128,21 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     private void setOnClickListeners() {
         starTv.setOnClickListener(
-                v -> Toast.makeText(this, "Star clicked", Toast.LENGTH_SHORT).show()
+                v -> insertMovieToContentResolver()
         );
+    }
+
+    private void insertMovieToContentResolver() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_MOVIE_ID, mMovie.getId());
+        contentValues.put(COLUMN_TITLE, mMovie.getTitle());
+        contentValues.put(COLUMN_RELEASE_DATE, getReleaseYear(mMovie));
+        contentValues.put(COLUMN_IMAGE_THUMBNAIL, mMovie.getImageThumbnail());
+        contentValues.put(COLUMN_PLOT_SYNOPSIS, mMovie.getPlotSynopsis());
+        contentValues.put(COLUMN_USER_RATING, mMovie.getUserRating());
+        Uri uri = getContentResolver().insert(CONTENT_URI, contentValues);
+        Toast.makeText(this, Optional.ofNullable(uri).map(Uri::toString).orElse(""), Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
@@ -156,7 +179,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(EXTRA_MOVIE, movie);
+        outState.putSerializable(EXTRA_MOVIE, mMovie);
         super.onSaveInstanceState(outState);
     }
 }

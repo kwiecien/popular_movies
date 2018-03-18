@@ -30,6 +30,10 @@ public class Movie implements Serializable {
         return mImageThumbnail;
     }
 
+    public long getId() {
+        return mId;
+    }
+
     public String getTitle() {
         return mTitle;
     }

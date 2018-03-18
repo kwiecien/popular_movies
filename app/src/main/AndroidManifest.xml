@@ -27,6 +27,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MoviePostersActivity" />
         </activity>
+
+        <provider
+            android:name="com.kk.popularmovies.data.MovieProvider"
+            android:authorities="com.kk.popularmovies"
+            android:exported="false" />
+
     </application>
 
 </manifest>
