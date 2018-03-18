@@ -2,12 +2,15 @@ package com.kk.popularmovies;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -32,10 +35,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MoviePostersFragment extends Fragment implements MoviesAdapter.MoviesAdapterOnClickHandler {
+public class MoviePostersFragment extends Fragment
+        implements MoviesAdapter.MoviesAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
-
+    private static final int ID_MOVIE_LOADER = 100;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
@@ -160,6 +164,26 @@ public class MoviePostersFragment extends Fragment implements MoviesAdapter.Movi
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(EXTRA_MOVIES, mMoviesAdapter.getMovies() != null ? new ArrayList<>(mMoviesAdapter.getMovies()) : null);
         super.onSaveInstanceState(outState);
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle args) {
+        /*switch (loaderId) {
+            case ID_MOVIE_LOADER:
+                Uri movie
+        }*/
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
     }
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {

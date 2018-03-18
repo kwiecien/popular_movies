@@ -1,7 +1,5 @@
 package com.kk.popularmovies.utilities;
 
-import android.util.Log;
-
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.Review;
 import com.kk.popularmovies.model.Trailer;
@@ -10,12 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+
+import static com.kk.popularmovies.utilities.ReleaseDateUtils.parseDate;
 
 public class JsonUtils {
     private static final String VOTE_AVERAGE = "vote_average";
@@ -85,14 +82,4 @@ public class JsonUtils {
         return trailers;
     }
 
-    private static Date parseDate(String releaseDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date parsedDate = null;
-        try {
-            parsedDate = dateFormat.parse(releaseDate);
-        } catch (ParseException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-        return parsedDate;
-    }
 }

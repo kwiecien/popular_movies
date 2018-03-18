@@ -20,6 +20,23 @@ public class Movie implements Serializable {
         mImageThumbnail = makeImageThumbnail(builder.mPosterPath);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Movie movie = (Movie) o;
+        return mId == movie.mId;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (mId ^ (mId >>> 32));
+    }
+
     private String makeImageThumbnail(String filePath) {
         String baseUrl = "https://image.tmdb.org/t/p";
         String fileSize = "/w185";

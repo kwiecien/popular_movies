@@ -6,14 +6,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import java.util.Optional;
 
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.CONTENT_URI;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.TABLE_NAME;
 
@@ -43,31 +44,71 @@ public class MovieProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        return null;
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor cursor;
+        switch (sUriMatcher.match(uri)) {
+            case CODE_MOVIES:
+                cursor = db.query(
+                        TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case CODE_MOVIE_WITH_ID:
+                String id = uri.getLastPathSegment();
+                cursor = db.query(
+                        TABLE_NAME,
+                        projection,
+                        COLUMN_MOVIE_ID + "=?",
+                        new String[]{id},
+                        null,
+                        null,
+                        null
+                );
+                break;
+            default:
+                throw throwUnknownUriException(uri);
+        }
+        if (getContext() != null) {
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
+        return cursor;
+    }
+
+    private UnsupportedOperationException throwUnknownUriException(@NonNull Uri uri) {
+        throw new UnsupportedOperationException("Unknown URI: " + uri);
     }
 
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        switch (sUriMatcher.match(uri)) {
+            case CODE_MOVIES:
+                return "vnd.android.cursor.dir" + "/" + MovieContract.CONTENT_AUTHORITY + "/" + MovieContract.PATH_MOVIES;
+            case CODE_MOVIE_WITH_ID:
+                return "vnd.android.cursor.item" + "/" + MovieContract.CONTENT_AUTHORITY + "/" + MovieContract.PATH_MOVIES;
+            default:
+                throw throwUnknownUriException(uri);
+        }
     }
 
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        Uri returnUri;
-        switch (sUriMatcher.match(uri)) {
-            case CODE_MOVIES:
-                long id = db.insert(TABLE_NAME, null, values);
-                if (id > 0) {
-                    returnUri = ContentUris.withAppendedId(CONTENT_URI, id);
-                } else {
-                    throw new SQLException("Failed to insert row into " + uri);
-                }
-                break;
-            default:
-                throw new UnsupportedOperationException("Unknown URI: " + uri);
+        Uri returnUri = null;
+        if (sUriMatcher.match(uri) == CODE_MOVIES) {
+            long id = db.insert(TABLE_NAME, null, values);
+            if (id > 0) {
+                returnUri = ContentUris.withAppendedId(CONTENT_URI, id);
+            } else {
+                Toast.makeText(getContext(), "Failed to insert row into " + uri, Toast.LENGTH_LONG).show();
+            }
+        } else {
+            throwUnknownUriException(uri);
         }
         Optional.ofNullable(getContext()).map(Context::getContentResolver).ifPresent(cr -> cr.notifyChange(uri, null));
         return returnUri;
@@ -75,11 +116,24 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        int moviesDeleted = 0;
+        if (sUriMatcher.match(uri) == CODE_MOVIE_WITH_ID) {
+            String movieId = uri.getLastPathSegment();
+            moviesDeleted = mDbHelper.getWritableDatabase().delete(
+                    TABLE_NAME,
+                    "movie_id=?",
+                    new String[]{movieId});
+        } else {
+            throwUnknownUriException(uri);
+        }
+        if (moviesDeleted > 0) {
+            Optional.ofNullable(getContext()).map(Context::getContentResolver).ifPresent(cr -> cr.notifyChange(uri, null));
+        }
+        return moviesDeleted;
     }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        throw new UnsupportedOperationException("Update not supported!");
     }
 }

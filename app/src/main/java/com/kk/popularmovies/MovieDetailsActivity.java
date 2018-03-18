@@ -1,36 +1,35 @@
 package com.kk.popularmovies;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.utilities.ReleaseDateUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_RELEASE_DATE;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_TITLE;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_USER_RATING;
-import static com.kk.popularmovies.data.MovieContract.MovieEntry.CONTENT_URI;
+import static com.kk.popularmovies.data.MovieDbHelper.deleteMovieFromDb;
+import static com.kk.popularmovies.data.MovieDbHelper.findFavoriteMovies;
+import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
+import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -80,26 +79,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
             mMovie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
         }
         if (mMovie != null) {
-            setViewsContent(mMovie);
-            setBackgroundImage(extras, mMovie);
+            setViewsContent();
+            setBackgroundImage(extras);
             setOnClickListeners();
         }
     }
 
-    private void setViewsContent(Movie movie) {
-        movieTv.setText(movie.getTitle());
-        releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(movie)));
-        userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", movie.getUserRating()));
-        plotSynopsisTv.setText(movie.getPlotSynopsis());
-        starTv.setImageResource(determineIfFavorite(movie.getTitle()));
+    private void setViewsContent() {
+        movieTv.setText(mMovie.getTitle());
+        releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
+        userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
+        plotSynopsisTv.setText(mMovie.getPlotSynopsis());
+        starTv.setImageResource(determineStar());
         setReviews();
         setTrailers();
     }
 
-    private int determineIfFavorite(String title) {
-        return ThreadLocalRandom.current().nextInt(2) % 2 == 0 ?
+    private int determineStar() {
+        return getFavoriteMoviesAsList(findFavoriteMovies(this)).contains(mMovie) ?
                 android.R.drawable.star_big_on :
-                android.R.drawable.star_big_off; // TODO Set star according to true data
+                android.R.drawable.star_big_off;
     }
 
     private void setReviews() {
@@ -120,30 +119,55 @@ public class MovieDetailsActivity extends AppCompatActivity {
         trailersLl.addView(textView2);
     }
 
-    private void setBackgroundImage(Bundle extras, Movie movie) {
-        String imageThumbnail = movie.getImageThumbnail();
+    private void setBackgroundImage(Bundle extras) {
+        String imageThumbnail = mMovie.getImageThumbnail();
         ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
         displayBackgroundImage(extras, imageThumbnail, backgroundImage);
     }
 
     private void setOnClickListeners() {
         starTv.setOnClickListener(
-                v -> insertMovieToContentResolver()
+                v -> handleFavoriteMovie()
         );
     }
 
-    private void insertMovieToContentResolver() {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_MOVIE_ID, mMovie.getId());
-        contentValues.put(COLUMN_TITLE, mMovie.getTitle());
-        contentValues.put(COLUMN_RELEASE_DATE, getReleaseYear(mMovie));
-        contentValues.put(COLUMN_IMAGE_THUMBNAIL, mMovie.getImageThumbnail());
-        contentValues.put(COLUMN_PLOT_SYNOPSIS, mMovie.getPlotSynopsis());
-        contentValues.put(COLUMN_USER_RATING, mMovie.getUserRating());
-        Uri uri = getContentResolver().insert(CONTENT_URI, contentValues);
-        Toast.makeText(this, Optional.ofNullable(uri).map(Uri::toString).orElse(""), Toast.LENGTH_SHORT)
-                .show();
+    private void handleFavoriteMovie() {
+        Cursor moviesCursor = findFavoriteMovies(this);
+        List<Movie> favoriteMovies = getFavoriteMoviesAsList(moviesCursor);
+        if (favoriteMovies.contains(mMovie)) {
+            deleteMovieFromDb(this, mMovie);
+        } else {
+            insertMovieToDb(this, mMovie);
+        }
+        starTv.setImageResource(determineStar());
     }
+
+    @NonNull
+    private List<Movie> getFavoriteMoviesAsList(Cursor moviesCursor) {
+        List<Movie> favoriteMovies = new ArrayList<>();
+        int indexMovieId = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID);
+        int indexTitle = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE);
+        int indexReleaseDate = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
+        int indexImageThumbnail = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL);
+        int indexPlotSynopsis = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS);
+        int indexUserRanking = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_USER_RATING);
+        for (moviesCursor.moveToFirst(); !moviesCursor.isAfterLast(); moviesCursor.moveToNext()) {
+            long id = moviesCursor.getLong(indexMovieId);
+            String title = moviesCursor.getString(indexTitle);
+            Date releaseDate = ReleaseDateUtils.parseDate(moviesCursor.getString(indexReleaseDate));
+            String imageThumbnail = moviesCursor.getString(indexImageThumbnail);
+            String plotSynopsis = moviesCursor.getString(indexPlotSynopsis);
+            double userRanking = moviesCursor.getDouble(indexUserRanking);
+            Movie movie = new Movie.Builder(id, title, releaseDate)
+                    .withPlotSynopsis(plotSynopsis)
+                    .withPosterPath(imageThumbnail.substring(imageThumbnail.lastIndexOf('/')))
+                    .withUserRating(userRanking)
+                    .build();
+            favoriteMovies.add(movie);
+        }
+        return favoriteMovies;
+    }
+
 
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
         String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
@@ -163,10 +187,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
                         supportStartPostponedEnterTransition();
                     }
                 });
-    }
-
-    private String getReleaseYear(Movie movie) {
-        return new SimpleDateFormat("yyyy", Locale.getDefault()).format(movie.getReleaseDate());
     }
 
     @Override
