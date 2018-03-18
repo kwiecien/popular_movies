@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.kk.popularmovies.data.MovieDbHelper;
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.SortOrder;
 import com.kk.popularmovies.utilities.JsonUtils;
@@ -68,6 +69,16 @@ public class MoviePostersFragment extends Fragment
             loadMoviesData(defaultSortOrder);
         }
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        if (mSortOrder == SortOrder.FAVORITES) {
+            mMoviesAdapter.notifyDataSetChanged();
+            loadMoviesDataFromDatabase();
+            mMoviesAdapter.notifyItemRemoved(1); // TODO
+        }
+        super.onResume();
     }
 
     private void findViews(View rootView) {
@@ -116,7 +127,8 @@ public class MoviePostersFragment extends Fragment
     }
 
     private void loadMoviesDataFromDatabase() {
-        // TODO Proviede sensible implementation
+        Cursor moviesCursor = MovieDbHelper.findFavoriteMovies(getContext());
+        showMoviesOrError(MovieDbHelper.getFavoriteMoviesAsList(moviesCursor));
     }
 
     private void loadMoviesDataFromInternet(SortOrder sortOrder) {
@@ -124,11 +136,11 @@ public class MoviePostersFragment extends Fragment
     }
 
     private void showMoviesOrError(List<Movie> movies) {
-        if (movies != null) {
+        if (movies != null && !movies.isEmpty()) {
             showMoviesDataView();
             mMoviesAdapter.setMoviesData(movies);
         } else {
-            showErrorMessage();
+            showErrorMessage(); // TODO add message for empty favorites list
         }
     }
 

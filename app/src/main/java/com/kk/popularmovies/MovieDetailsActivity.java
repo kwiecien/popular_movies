@@ -142,6 +142,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
         String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
         backgroundImage.setTransitionName(transitionName);
+        // TODO download or load from memory from favorites
         Picasso.with(this)
                 .load(imageThumbnail)
                 .noFade()
