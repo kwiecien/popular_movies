@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ public class MoviePostersFragment extends Fragment
         implements MoviesAdapter.MoviesAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
+    private static final String EXTRA_SORT_ORDER = "com.kk.popularmovies.extra_sort_order";
     private static final int ID_MOVIE_LOADER = 100;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
@@ -59,16 +61,23 @@ public class MoviePostersFragment extends Fragment
         setHasOptionsMenu(true);
         prepareRecyclerView();
         showMoviesDataView();
-        SortOrder defaultSortOrder = retrieveDefaultSortOrder();
-        mSortOrder = defaultSortOrder;
         if (savedInstanceState != null) {
             @SuppressWarnings("unchecked")
             List<Movie> movies = (List<Movie>) savedInstanceState.getSerializable(EXTRA_MOVIES);
+            mSortOrder = (SortOrder) savedInstanceState.getSerializable(EXTRA_SORT_ORDER);
             showMoviesOrError(movies);
         } else {
-            loadMoviesData(defaultSortOrder);
+            mSortOrder = retrieveDefaultSortOrder();
+            loadMoviesData(mSortOrder);
         }
         return rootView;
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem sortOrderMenuItem = menu.findItem(R.id.sort_order_item);
+        sortOrderMenuItem.setTitle(mSortOrder.getStringRepresentation());
     }
 
     @Override
@@ -183,6 +192,7 @@ public class MoviePostersFragment extends Fragment
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(EXTRA_MOVIES, mMoviesAdapter.getMovies() != null ? new ArrayList<>(mMoviesAdapter.getMovies()) : null);
+        outState.putSerializable(EXTRA_SORT_ORDER, mSortOrder);
         super.onSaveInstanceState(outState);
     }
 
