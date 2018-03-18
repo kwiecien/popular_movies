@@ -5,6 +5,7 @@
     <string name="background_image">Background image</string>
 
     <string name="error_no_internet">An error has occurred.\nAre you connected to the Internet?</string>
+    <string name="error_no_favorites">You have no favorite movies.\nMark your favorite movies with a star.</string>
 
     <string name="sort_order">Sort order</string>
     <string name="pref_sort_label_popular">Popular</string>

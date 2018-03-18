@@ -44,7 +44,7 @@ public class MoviePostersFragment extends Fragment
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
-    private TextView mErrorMessageDisplay;
+    private TextView mErrorMessage;
     private SortOrder mSortOrder;
 
     public MoviePostersFragment() {
@@ -74,9 +74,8 @@ public class MoviePostersFragment extends Fragment
     @Override
     public void onResume() {
         if (mSortOrder == SortOrder.FAVORITES) {
-            mMoviesAdapter.notifyDataSetChanged();
             loadMoviesDataFromDatabase();
-            mMoviesAdapter.notifyItemRemoved(1); // TODO
+            mMoviesAdapter.notifyDataSetChanged();
         }
         super.onResume();
     }
@@ -84,7 +83,7 @@ public class MoviePostersFragment extends Fragment
     private void findViews(View rootView) {
         mRecyclerView = rootView.findViewById(R.id.rv_movies);
         mLoadingIndicator = rootView.findViewById(R.id.pb_loading_indicator);
-        mErrorMessageDisplay = rootView.findViewById(R.id.tv_error_message_display);
+        mErrorMessage = rootView.findViewById(R.id.tv_error_message);
     }
 
     private void prepareRecyclerView() {
@@ -106,7 +105,7 @@ public class MoviePostersFragment extends Fragment
     }
 
     private void showMoviesDataView() {
-        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
@@ -136,17 +135,26 @@ public class MoviePostersFragment extends Fragment
     }
 
     private void showMoviesOrError(List<Movie> movies) {
-        if (movies != null && !movies.isEmpty()) {
-            showMoviesDataView();
-            mMoviesAdapter.setMoviesData(movies);
+        if (movies == null) {
+            showInternetErrorMessage();
+        } else if (movies.isEmpty()) {
+            showNoFavoritesErrorMessage();
         } else {
-            showErrorMessage(); // TODO add message for empty favorites list
+            mMoviesAdapter.setMoviesData(movies);
+            showMoviesDataView();
         }
     }
 
-    private void showErrorMessage() {
+    private void showNoFavoritesErrorMessage() {
         mRecyclerView.setVisibility(View.INVISIBLE);
-        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+        mErrorMessage.setVisibility(View.VISIBLE);
+        mErrorMessage.setText(getText(R.string.error_no_favorites));
+    }
+
+    private void showInternetErrorMessage() {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mErrorMessage.setVisibility(View.VISIBLE);
+        mErrorMessage.setText(getText(R.string.error_no_internet));
     }
 
     @Override
@@ -229,7 +237,7 @@ public class MoviePostersFragment extends Fragment
                 showMoviesDataView();
                 mMoviesAdapter.setMoviesData(Arrays.asList(movies));
             } else {
-                showErrorMessage();
+                showInternetErrorMessage();
             }
         }
     }

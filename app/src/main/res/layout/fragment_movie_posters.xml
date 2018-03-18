@@ -11,14 +11,14 @@
         tools:context=".MoviePostersActivity" />
 
     <TextView
-        android:id="@+id/tv_error_message_display"
+        android:id="@+id/tv_error_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
         android:padding="16dp"
-        android:text="@string/error_no_internet"
         android:textSize="20sp"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        tools:text="@string/error_no_internet" />
 
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
