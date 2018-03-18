@@ -4,21 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.kk.popularmovies.data.MovieContract;
+import com.kk.popularmovies.data.MovieDbHelper;
 import com.kk.popularmovies.model.Movie;
-import com.kk.popularmovies.utilities.ReleaseDateUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -28,6 +24,7 @@ import butterknife.ButterKnife;
 
 import static com.kk.popularmovies.data.MovieDbHelper.deleteMovieFromDb;
 import static com.kk.popularmovies.data.MovieDbHelper.findFavoriteMovies;
+import static com.kk.popularmovies.data.MovieDbHelper.getFavoriteMoviesAsList;
 import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 
@@ -132,8 +129,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void handleFavoriteMovie() {
-        Cursor moviesCursor = findFavoriteMovies(this);
-        List<Movie> favoriteMovies = getFavoriteMoviesAsList(moviesCursor);
+        Cursor moviesCursor = MovieDbHelper.findFavoriteMovies(this);
+        List<Movie> favoriteMovies = MovieDbHelper.getFavoriteMoviesAsList(moviesCursor);
         if (favoriteMovies.contains(mMovie)) {
             deleteMovieFromDb(this, mMovie);
         } else {
@@ -141,33 +138,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         starTv.setImageResource(determineStar());
     }
-
-    @NonNull
-    private List<Movie> getFavoriteMoviesAsList(Cursor moviesCursor) {
-        List<Movie> favoriteMovies = new ArrayList<>();
-        int indexMovieId = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID);
-        int indexTitle = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE);
-        int indexReleaseDate = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
-        int indexImageThumbnail = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL);
-        int indexPlotSynopsis = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS);
-        int indexUserRanking = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_USER_RATING);
-        for (moviesCursor.moveToFirst(); !moviesCursor.isAfterLast(); moviesCursor.moveToNext()) {
-            long id = moviesCursor.getLong(indexMovieId);
-            String title = moviesCursor.getString(indexTitle);
-            Date releaseDate = ReleaseDateUtils.parseDate(moviesCursor.getString(indexReleaseDate));
-            String imageThumbnail = moviesCursor.getString(indexImageThumbnail);
-            String plotSynopsis = moviesCursor.getString(indexPlotSynopsis);
-            double userRanking = moviesCursor.getDouble(indexUserRanking);
-            Movie movie = new Movie.Builder(id, title, releaseDate)
-                    .withPlotSynopsis(plotSynopsis)
-                    .withPosterPath(imageThumbnail.substring(imageThumbnail.lastIndexOf('/')))
-                    .withUserRating(userRanking)
-                    .build();
-            favoriteMovies.add(movie);
-        }
-        return favoriteMovies;
-    }
-
 
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
         String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
