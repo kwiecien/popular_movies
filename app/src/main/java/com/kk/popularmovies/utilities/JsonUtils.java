@@ -26,7 +26,6 @@ public class JsonUtils {
     private static final String RESULTS = "results";
     private static final String NAME = "name";
     private static final String KEY = "key";
-    private static final String TAG = JsonUtils.class.getSimpleName();
 
     private JsonUtils() {
     }

@@ -3,19 +3,25 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.kk.popularmovies.data.MovieDbHelper;
+import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.utilities.MovieDbUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -23,32 +29,33 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.kk.popularmovies.data.MovieDbHelper.deleteMovieFromDb;
-import static com.kk.popularmovies.data.MovieDbHelper.findFavoriteMovies;
-import static com.kk.popularmovies.data.MovieDbHelper.getFavoriteMoviesAsList;
 import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
     private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra.transition";
+    private static final int ID_FAVORITE_MOVIES_LOADER = 1;
 
     @BindView(R.id.movie_details_title_tv)
-    TextView movieTv;
+    TextView mMovieTv;
     @BindView(R.id.movie_details_release_date_tv)
-    TextView releaseDateTv;
+    TextView mReleaseDateTv;
     @BindView(R.id.movie_details_user_rating_tv)
-    TextView userRankingTv;
+    TextView mUserRankingTv;
     @BindView(R.id.movie_details_plot_synopsis_tv)
-    TextView plotSynopsisTv;
+    TextView mPlotSynopsisTv;
     @BindView(R.id.movie_details_star_iv)
-    ImageView starTv;
+    ImageView mStarTv;
     @BindView(R.id.reviews_ll)
-    LinearLayout reviewsLl;
+    LinearLayout mReviewsLl;
     @BindView(R.id.trailers_ll)
     LinearLayout trailersLl;
 
     private Movie mMovie;
+    private boolean mFavorite;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -83,19 +90,32 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void setViewsContent() {
-        movieTv.setText(mMovie.getTitle());
-        releaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
-        userRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
-        plotSynopsisTv.setText(mMovie.getPlotSynopsis());
-        starTv.setImageResource(determineStar());
+        mMovieTv.setText(mMovie.getTitle());
+        mReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
+        mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
+        mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
+        getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, this);
         setReviews();
         setTrailers();
     }
 
-    private int determineStar() {
-        return getFavoriteMoviesAsList(findFavoriteMovies(this)).contains(mMovie) ?
-                android.R.drawable.star_big_on :
-                android.R.drawable.star_big_off;
+    private void determineIfFavorite(Cursor favoriteMovies) {
+        mFavorite = MovieDbUtils.getFavoriteMoviesAsList(favoriteMovies).contains(mMovie);
+        if (mFavorite) {
+            mStarTv.setImageResource(android.R.drawable.star_big_on);
+        } else {
+            mStarTv.setImageResource(android.R.drawable.star_big_off);
+        }
+    }
+
+    private int swapStar() {
+        if (mFavorite) {
+            mFavorite = false;
+            return android.R.drawable.star_big_off;
+        } else {
+            mFavorite = true;
+            return android.R.drawable.star_big_on;
+        }
     }
 
     private void setReviews() {
@@ -103,8 +123,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         textView1.setText("Review 1\nReview 1\nReview 1\nReview 1\n");
         TextView textView2 = new TextView(this);
         textView2.setText("Review 2\nReview 2\nReview 2\nReview 2\n");
-        reviewsLl.addView(textView1);
-        reviewsLl.addView(textView2);
+        mReviewsLl.addView(textView1);
+        mReviewsLl.addView(textView2);
     }
 
     private void setTrailers() {
@@ -123,20 +143,23 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void setOnClickListeners() {
-        starTv.setOnClickListener(
+        mStarTv.setOnClickListener(
                 v -> handleFavoriteMovie()
         );
     }
 
     private void handleFavoriteMovie() {
-        Cursor moviesCursor = MovieDbHelper.findFavoriteMovies(this);
-        List<Movie> favoriteMovies = MovieDbHelper.getFavoriteMoviesAsList(moviesCursor);
-        if (favoriteMovies.contains(mMovie)) {
-            deleteMovieFromDb(this, mMovie);
+        if (mFavorite) {
+            int deletedMovies = deleteMovieFromDb(this, mMovie);
+            if (deletedMovies > 0) {
+                mStarTv.setImageResource(swapStar());
+            }
         } else {
-            insertMovieToDb(this, mMovie);
+            Uri insertedUri = insertMovieToDb(this, mMovie);
+            if (insertedUri != null) {
+                mStarTv.setImageResource(swapStar());
+            }
         }
-        starTv.setImageResource(determineStar());
     }
 
     private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
@@ -173,4 +196,33 @@ public class MovieDetailsActivity extends AppCompatActivity {
         outState.putSerializable(EXTRA_MOVIE, mMovie);
         super.onSaveInstanceState(outState);
     }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle bundle) {
+        switch (loaderId) {
+            case ID_FAVORITE_MOVIES_LOADER:
+                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
+                String sortOrder = MovieContract.MovieEntry._ID + " ASC";
+                return new CursorLoader(this,
+                        movieQueryUri,
+                        null,
+                        null,
+                        null,
+                        sortOrder);
+            default:
+                throw new UnsupportedOperationException("Loader not implemented: " + loaderId);
+        }
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        determineIfFavorite(data);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        // TODO should do something?
+    }
+
 }

@@ -3,6 +3,7 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.preference.PreferenceManager;
@@ -26,10 +28,11 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.kk.popularmovies.data.MovieDbHelper;
+import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.SortOrder;
 import com.kk.popularmovies.utilities.JsonUtils;
+import com.kk.popularmovies.utilities.MovieDbUtils;
 import com.kk.popularmovies.utilities.NetworkUtils;
 
 import java.net.URL;
@@ -42,12 +45,13 @@ public class MoviePostersFragment extends Fragment
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
     private static final String EXTRA_SORT_ORDER = "com.kk.popularmovies.extra_sort_order";
-    private static final int ID_MOVIE_LOADER = 100;
+    private static final int ID_FAVORITE_MOVIES_LOADER = 100;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessage;
     private SortOrder mSortOrder;
+    private int mPosition = RecyclerView.NO_POSITION;
 
     public MoviePostersFragment() {
         // Default constructor to suppress lint
@@ -80,15 +84,6 @@ public class MoviePostersFragment extends Fragment
         sortOrderMenuItem.setTitle(mSortOrder.getStringRepresentation());
     }
 
-    @Override
-    public void onResume() {
-        if (mSortOrder == SortOrder.FAVORITES) {
-            loadMoviesDataFromDatabase();
-            mMoviesAdapter.notifyDataSetChanged();
-        }
-        super.onResume();
-    }
-
     private void findViews(View rootView) {
         mRecyclerView = rootView.findViewById(R.id.rv_movies);
         mLoadingIndicator = rootView.findViewById(R.id.pb_loading_indicator);
@@ -116,6 +111,7 @@ public class MoviePostersFragment extends Fragment
     private void showMoviesDataView() {
         mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
+        mRecyclerView.smoothScrollToPosition(0);
     }
 
     private SortOrder retrieveDefaultSortOrder() {
@@ -135,8 +131,7 @@ public class MoviePostersFragment extends Fragment
     }
 
     private void loadMoviesDataFromDatabase() {
-        Cursor moviesCursor = MovieDbHelper.findFavoriteMovies(getContext());
-        showMoviesOrError(MovieDbHelper.getFavoriteMoviesAsList(moviesCursor));
+        getActivity().getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, this);
     }
 
     private void loadMoviesDataFromInternet(SortOrder sortOrder) {
@@ -198,22 +193,37 @@ public class MoviePostersFragment extends Fragment
 
     @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle args) {
-        /*switch (loaderId) {
-            case ID_MOVIE_LOADER:
-                Uri movie
-        }*/
-        return null;
+    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle bundle) {
+        switch (loaderId) {
+            case ID_FAVORITE_MOVIES_LOADER:
+                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
+                String sortOrder = MovieContract.MovieEntry._ID + " ASC";
+                return new CursorLoader(getContext(),
+                        movieQueryUri,
+                        null,
+                        null,
+                        null,
+                        sortOrder);
+            default:
+                throw new UnsupportedOperationException("Loader not implemented: " + loaderId);
+        }
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-
+        if (mSortOrder != SortOrder.FAVORITES) { // TODO Why after changing star and going back this triggers?
+            return;
+        }
+        if (mPosition == RecyclerView.NO_POSITION) {
+            mPosition = 0;
+        }
+        mRecyclerView.smoothScrollToPosition(mPosition);
+        showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList(data));
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-
+        mMoviesAdapter.setMoviesData(null);
     }
 
     private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
