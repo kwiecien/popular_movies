@@ -17,8 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kk.popularmovies.data.MovieContract;
+import com.kk.popularmovies.enums.LoaderId;
 import com.kk.popularmovies.model.Movie;
-import com.kk.popularmovies.utilities.MovieDbUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -37,7 +37,7 @@ public class MovieDetailsActivity extends AppCompatActivity
 
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
     private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra.transition";
-    private static final int ID_FAVORITE_MOVIES_LOADER = 1;
+    private static final int LOADER_MOVIE_BY_ID = LoaderId.MovieDetails.MOVIE_BY_ID;
 
     @BindView(R.id.movie_details_title_tv)
     TextView mMovieTv;
@@ -94,14 +94,14 @@ public class MovieDetailsActivity extends AppCompatActivity
         mReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
         mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
         mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
-        getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, this);
+        getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
         setReviews();
         setTrailers();
     }
 
-    private void determineIfFavorite(Cursor favoriteMovies) {
-        mFavorite = MovieDbUtils.getFavoriteMoviesAsList(favoriteMovies).contains(mMovie);
-        if (mFavorite) {
+    private void determineIfFavorite(boolean favorite) {
+        mFavorite = favorite;
+        if (favorite) {
             mStarTv.setImageResource(android.R.drawable.star_big_on);
         } else {
             mStarTv.setImageResource(android.R.drawable.star_big_off);
@@ -201,23 +201,26 @@ public class MovieDetailsActivity extends AppCompatActivity
     @Override
     public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle bundle) {
         switch (loaderId) {
-            case ID_FAVORITE_MOVIES_LOADER:
-                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
-                String sortOrder = MovieContract.MovieEntry._ID + " ASC";
+            case LOADER_MOVIE_BY_ID:
+                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI.buildUpon()
+                        .appendPath(Long.toString(mMovie.getId())).build();
                 return new CursorLoader(this,
                         movieQueryUri,
+                        new String[]{MovieContract.MovieEntry.COLUMN_MOVIE_ID},
                         null,
                         null,
-                        null,
-                        sortOrder);
+                        null);
             default:
-                throw new UnsupportedOperationException("Loader not implemented: " + loaderId);
+                throw new UnsupportedOperationException("LoaderId not implemented: " + loaderId);
         }
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        determineIfFavorite(data);
+        if (data == null) {
+            return;
+        }
+        determineIfFavorite(data.moveToFirst());
     }
 
     @Override

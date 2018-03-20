@@ -29,6 +29,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kk.popularmovies.data.MovieContract;
+import com.kk.popularmovies.enums.LoaderId;
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.SortOrder;
 import com.kk.popularmovies.utilities.JsonUtils;
@@ -45,13 +46,12 @@ public class MoviePostersFragment extends Fragment
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
     private static final String EXTRA_SORT_ORDER = "com.kk.popularmovies.extra_sort_order";
-    private static final int ID_FAVORITE_MOVIES_LOADER = 100;
+    private static final int ID_FAVORITE_MOVIES_LOADER = LoaderId.MoviePosters.FAVORITE_MOVIES;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessage;
     private SortOrder mSortOrder;
-    private int mPosition = RecyclerView.NO_POSITION;
 
     public MoviePostersFragment() {
         // Default constructor to suppress lint
@@ -205,19 +205,12 @@ public class MoviePostersFragment extends Fragment
                         null,
                         sortOrder);
             default:
-                throw new UnsupportedOperationException("Loader not implemented: " + loaderId);
+                throw new UnsupportedOperationException("LoaderId not implemented: " + loaderId);
         }
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        if (mSortOrder != SortOrder.FAVORITES) { // TODO Why after changing star and going back this triggers?
-            return;
-        }
-        if (mPosition == RecyclerView.NO_POSITION) {
-            mPosition = 0;
-        }
-        mRecyclerView.smoothScrollToPosition(mPosition);
         showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList(data));
     }
 

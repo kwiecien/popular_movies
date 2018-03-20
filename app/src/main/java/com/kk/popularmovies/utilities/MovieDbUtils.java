@@ -16,7 +16,7 @@ public class MovieDbUtils {
     }
 
     @NonNull
-    public static List<Movie> getFavoriteMoviesAsList(Cursor moviesCursor) {
+    public static List<Movie> getFavoriteMoviesAsList(@NonNull Cursor moviesCursor) {
         List<Movie> favoriteMovies = new ArrayList<>();
         int indexMovieId = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID);
         int indexTitle = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE);
