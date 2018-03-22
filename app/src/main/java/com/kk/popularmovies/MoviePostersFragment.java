@@ -111,7 +111,7 @@ public class MoviePostersFragment extends Fragment
     private void showMoviesDataView() {
         mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
-        mRecyclerView.smoothScrollToPosition(0);
+        // mRecyclerView.smoothScrollToPosition(0); // TODO keep it?
     }
 
     private SortOrder retrieveDefaultSortOrder() {
@@ -211,7 +211,16 @@ public class MoviePostersFragment extends Fragment
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList(data));
+        if (mSortOrder == SortOrder.FAVORITES) { // QUESTION
+            // Why do I have to check that? If I don't, weird things happen:
+            // 1. I am on the top rated/poplar screen and select a movie
+            // 2. I touch a star on a details screen
+            // 3. When I go back, this method is invoked.
+            //
+            // I think this behavior is connected with Cursor and notifying it.
+            // Could you tell me more how I should handle this situation?
+            showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList(data));
+        }
     }
 
     @Override

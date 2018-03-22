@@ -108,9 +108,11 @@ public class MovieProvider extends ContentProvider {
                 Toast.makeText(getContext(), "Failed to insert row into " + uri, Toast.LENGTH_LONG).show();
             }
         } else {
-            throwUnknownUriException(uri);
+            throw throwUnknownUriException(uri);
         }
-        Optional.ofNullable(getContext()).map(Context::getContentResolver).ifPresent(cr -> cr.notifyChange(uri, null));
+        Optional.ofNullable(getContext())
+                .map(Context::getContentResolver)
+                .ifPresent(cr -> cr.notifyChange(uri, null));
         return returnUri;
     }
 

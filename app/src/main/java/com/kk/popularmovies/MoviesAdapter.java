@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.kk.popularmovies.model.Movie;
 import com.squareup.picasso.Picasso;
 
@@ -70,14 +71,18 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
         private void bind(int position, Context context) {
             Movie movie = mMovies.get(position);
-
             String imageThumbnail = movie.getImageThumbnail();
-            Picasso.with(context)
-                    .load(imageThumbnail)
-                    .placeholder(android.R.drawable.stat_sys_download)
-                    .error(android.R.drawable.stat_notify_error)
-                    .into(mPosterIv);
-
+            if (movie.getImage().length > 0) {
+                Glide.with(context)
+                        .load(movie.getImage())
+                        .into(mPosterIv);
+            } else {
+                Picasso.with(context)
+                        .load(imageThumbnail)
+                        .placeholder(android.R.drawable.stat_sys_download)
+                        .error(android.R.drawable.stat_notify_error)
+                        .into(mPosterIv);
+            }
             ViewCompat.setTransitionName(mPosterIv, movie.getTitle());
         }
 

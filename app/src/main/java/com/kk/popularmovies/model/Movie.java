@@ -10,6 +10,7 @@ public class Movie implements Serializable {
     private final String mImageThumbnail;
     private final String mPlotSynopsis;
     private final double mUserRating;
+    private final byte[] mImage;
 
     private Movie(Builder builder) {
         mId = builder.mId;
@@ -18,6 +19,7 @@ public class Movie implements Serializable {
         mPlotSynopsis = builder.mPlotSynopsis;
         mUserRating = builder.mUserRating;
         mImageThumbnail = makeImageThumbnail(builder.mPosterPath);
+        mImage = builder.mImage;
     }
 
     @Override
@@ -45,6 +47,10 @@ public class Movie implements Serializable {
 
     public String getImageThumbnail() {
         return mImageThumbnail;
+    }
+
+    public byte[] getImage() {
+        return mImage;
     }
 
     public long getId() {
@@ -81,6 +87,7 @@ public class Movie implements Serializable {
         private final String mTitle;
         private final Date mReleaseDate;
         private String mPosterPath = "";
+        private byte[] mImage = new byte[]{};
         private String mPlotSynopsis = "";
         private double mUserRating = 0.0f;
 
@@ -96,6 +103,11 @@ public class Movie implements Serializable {
 
         public Builder withPosterPath(String posterPath) {
             mPosterPath = posterPath;
+            return this;
+        }
+
+        public Builder withImage(byte[] image) {
+            mImage = image;
             return this;
         }
 

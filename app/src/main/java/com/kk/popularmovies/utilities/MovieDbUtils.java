@@ -25,6 +25,7 @@ public class MovieDbUtils {
         int indexTitle = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE);
         int indexReleaseDate = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
         int indexImageThumbnail = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL);
+        int indexImage = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE);
         int indexPlotSynopsis = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS);
         int indexUserRanking = moviesCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_USER_RATING);
         for (moviesCursor.moveToFirst(); !moviesCursor.isAfterLast(); moviesCursor.moveToNext()) {
@@ -32,12 +33,14 @@ public class MovieDbUtils {
             String title = moviesCursor.getString(indexTitle);
             Date releaseDate = ReleaseDateUtils.parseDate(moviesCursor.getString(indexReleaseDate));
             String imageThumbnail = moviesCursor.getString(indexImageThumbnail);
+            byte[] image = moviesCursor.getBlob(indexImage);
             String plotSynopsis = moviesCursor.getString(indexPlotSynopsis);
             double userRanking = moviesCursor.getDouble(indexUserRanking);
             Movie movie = new Movie.Builder(id, title, releaseDate)
                     .withPlotSynopsis(plotSynopsis)
                     .withPosterPath(imageThumbnail.substring(imageThumbnail.lastIndexOf('/')))
                     .withUserRating(userRanking)
+                    .withImage(image)
                     .build();
             favoriteMovies.add(movie);
         }
@@ -46,7 +49,7 @@ public class MovieDbUtils {
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
         return outputStream.toByteArray();
     }
 

@@ -45,6 +45,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
     private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra.transition";
     private static final int LOADER_MOVIE_BY_ID = LoaderId.MovieDetails.MOVIE_BY_ID;
+    private static final float ALPHA = 0.10f;
 
     @BindView(R.id.movie_details_title_tv)
     TextView mMovieTv;
@@ -56,6 +57,8 @@ public class MovieDetailsActivity extends AppCompatActivity
     TextView mPlotSynopsisTv;
     @BindView(R.id.movie_details_star_iv)
     ImageView mStarTv;
+    @BindView(R.id.movie_details_background_iv)
+    ImageView mBackgroundIv;
     @BindView(R.id.reviews_ll)
     LinearLayout mReviewsLl;
     @BindView(R.id.trailers_ll)
@@ -104,13 +107,13 @@ public class MovieDetailsActivity extends AppCompatActivity
         mReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
         mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
         mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
+        mBackgroundIv.setAlpha(ALPHA);
         setReviews();
         setTrailers();
     }
 
-    private void determineIfFavorite(boolean favorite) {
-        mFavorite = favorite;
-        if (favorite) {
+    private void setCorrectStarImage() {
+        if (mFavorite) {
             mStarTv.setImageResource(android.R.drawable.star_big_on);
         } else {
             mStarTv.setImageResource(android.R.drawable.star_big_off);
@@ -145,74 +148,63 @@ public class MovieDetailsActivity extends AppCompatActivity
         trailersLl.addView(textView2);
     }
 
-    private void setBackgroundImage() {
-        ImageView background = findViewById(R.id.movie_details_background_iv);
-        displayBackgroundImage(background);
-    }
-
     private void setOnClickListeners() {
         mStarTv.setOnClickListener(
-                v -> handleFavoriteMovie()
+                v -> onStarClicked()
         );
     }
 
-    private void handleFavoriteMovie() {
+    private void onStarClicked() {
         if (mFavorite) {
-            int deletedMovies = deleteMovieFromDb(this, mMovie);
-            if (deletedMovies > 0) {
-                mStarTv.setImageResource(swapStar());
-            }
+            removeMovieFromFavorites();
         } else {
-            Uri insertedUri = insertMovieToDb(this, mMovie, mImage);
-            if (insertedUri != null) {
-                mStarTv.setImageResource(swapStar());
-            }
+            saveMovieAsFavorite();
         }
     }
 
-    private void displayBackgroundImage(ImageView background) {
-        background.setTransitionName(mTransitionName);
-        if (mFavorite) {
-            fetchImageFromDb(background);
-        } else {
-            fetchImageFromInternet(background);
+    private void removeMovieFromFavorites() {
+        int deletedMovies = deleteMovieFromDb(this, mMovie);
+        if (deletedMovies > 0) {
+            mStarTv.setImageResource(swapStar());
         }
-
     }
 
-    private void fetchImageFromDb(ImageView background) {
+    private void setBackgroundImage(Cursor data) {
+        mBackgroundIv.setTransitionName(mTransitionName);
+        if (mFavorite) {
+            fetchImageFromDb(data);
+        } else {
+            fetchImageFromInternet();
+        }
+    }
+
+    private void fetchImageFromDb(Cursor data) {
+        // QUESTION
+        // If I click star, the posters are set into recycler view, but their size is weird...
+        // Sometimes they are twice as high, as they should be...
+        // Why? How to correct it?
+        mImage = getImageFromDb(data);
         Glide.with(this)
                 .load(mImage)
-                .into(background);
+                .into(mBackgroundIv);
         supportStartPostponedEnterTransition();
-        background.setAlpha(0.10f);
     }
 
-    private void fetchImageFromInternet(ImageView background) {
+    private void fetchImageFromInternet() {
         Picasso.with(this)
                 .load(mMovie.getImageThumbnail())
                 .noFade()
                 .placeholder(android.R.drawable.stat_sys_download)
                 .error(android.R.drawable.stat_notify_error)
-                .into(background, new Callback() {
+                .into(mBackgroundIv, new Callback() {
                     @Override
                     public void onSuccess() {
                         supportStartPostponedEnterTransition();
-                        background.setAlpha(0.10f);
                     }
 
                     @Override
                     public void onError() {
                         supportStartPostponedEnterTransition();
-                    }
-                });
-        Glide.with(this)
-                .asBitmap()
-                .load(mMovie.getImageThumbnail())
-                .into(new SimpleTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
-                        mImage = MovieDbUtils.getBitmapAsByteArray(resource);
                     }
                 });
     }
@@ -254,12 +246,31 @@ public class MovieDetailsActivity extends AppCompatActivity
         if (data == null) {
             return;
         }
-        boolean favorite = data.moveToFirst();
-        determineIfFavorite(favorite);
-        if (favorite) {
-            mImage = data.getBlob(data.getColumnIndex(COLUMN_IMAGE));
-        }
-        setBackgroundImage();
+        mFavorite = data.moveToFirst();
+        setCorrectStarImage();
+        setBackgroundImage(data);
+        data.close(); // QUESTION
+        // If I don't close it, there is wrong behavior of the app. Why?
+    }
+
+    private void saveMovieAsFavorite() {
+        Glide.with(this)
+                .asBitmap()
+                .load(mMovie.getImageThumbnail())
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+                        mImage = MovieDbUtils.getBitmapAsByteArray(resource);
+                        Uri insertedUri = insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
+                        if (insertedUri != null) {
+                            mStarTv.setImageResource(swapStar());
+                        }
+                    }
+                });
+    }
+
+    private byte[] getImageFromDb(Cursor data) {
+        return data.getBlob(data.getColumnIndex(COLUMN_IMAGE));
     }
 
     @Override
