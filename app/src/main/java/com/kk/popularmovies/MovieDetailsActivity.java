@@ -3,6 +3,7 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,9 +17,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.enums.LoaderId;
 import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.utilities.MovieDbUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -28,6 +33,8 @@ import java.util.Optional;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_IMAGE;
+import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.kk.popularmovies.data.MovieDbHelper.deleteMovieFromDb;
 import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
@@ -56,6 +63,8 @@ public class MovieDetailsActivity extends AppCompatActivity
 
     private Movie mMovie;
     private boolean mFavorite;
+    private byte[] mImage;
+    private String mTransitionName;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -81,10 +90,11 @@ public class MovieDetailsActivity extends AppCompatActivity
             Intent intent = getIntent();
             extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
             mMovie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
+            mTransitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
         }
         if (mMovie != null) {
+            getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
             setViewsContent();
-            setBackgroundImage(extras);
             setOnClickListeners();
         }
     }
@@ -94,7 +104,6 @@ public class MovieDetailsActivity extends AppCompatActivity
         mReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
         mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
         mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
-        getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
         setReviews();
         setTrailers();
     }
@@ -136,10 +145,9 @@ public class MovieDetailsActivity extends AppCompatActivity
         trailersLl.addView(textView2);
     }
 
-    private void setBackgroundImage(Bundle extras) {
-        String imageThumbnail = mMovie.getImageThumbnail();
-        ImageView backgroundImage = findViewById(R.id.movie_details_background_iv);
-        displayBackgroundImage(extras, imageThumbnail, backgroundImage);
+    private void setBackgroundImage() {
+        ImageView background = findViewById(R.id.movie_details_background_iv);
+        displayBackgroundImage(background);
     }
 
     private void setOnClickListeners() {
@@ -155,30 +163,56 @@ public class MovieDetailsActivity extends AppCompatActivity
                 mStarTv.setImageResource(swapStar());
             }
         } else {
-            Uri insertedUri = insertMovieToDb(this, mMovie);
+            Uri insertedUri = insertMovieToDb(this, mMovie, mImage);
             if (insertedUri != null) {
                 mStarTv.setImageResource(swapStar());
             }
         }
     }
 
-    private void displayBackgroundImage(Bundle extras, String imageThumbnail, ImageView backgroundImage) {
-        String transitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
-        backgroundImage.setTransitionName(transitionName);
-        // TODO download or load from memory from favorites
+    private void displayBackgroundImage(ImageView background) {
+        background.setTransitionName(mTransitionName);
+        if (mFavorite) {
+            fetchImageFromDb(background);
+        } else {
+            fetchImageFromInternet(background);
+        }
+
+    }
+
+    private void fetchImageFromDb(ImageView background) {
+        Glide.with(this)
+                .load(mImage)
+                .into(background);
+        supportStartPostponedEnterTransition();
+        background.setAlpha(0.10f);
+    }
+
+    private void fetchImageFromInternet(ImageView background) {
         Picasso.with(this)
-                .load(imageThumbnail)
+                .load(mMovie.getImageThumbnail())
                 .noFade()
-                .into(backgroundImage, new Callback() {
+                .placeholder(android.R.drawable.stat_sys_download)
+                .error(android.R.drawable.stat_notify_error)
+                .into(background, new Callback() {
                     @Override
                     public void onSuccess() {
                         supportStartPostponedEnterTransition();
-                        backgroundImage.setAlpha(0.10f);
+                        background.setAlpha(0.10f);
                     }
 
                     @Override
                     public void onError() {
                         supportStartPostponedEnterTransition();
+                    }
+                });
+        Glide.with(this)
+                .asBitmap()
+                .load(mMovie.getImageThumbnail())
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+                        mImage = MovieDbUtils.getBitmapAsByteArray(resource);
                     }
                 });
     }
@@ -206,7 +240,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                         .appendPath(Long.toString(mMovie.getId())).build();
                 return new CursorLoader(this,
                         movieQueryUri,
-                        new String[]{MovieContract.MovieEntry.COLUMN_MOVIE_ID},
+                        new String[]{COLUMN_MOVIE_ID, COLUMN_IMAGE},
                         null,
                         null,
                         null);
@@ -220,12 +254,17 @@ public class MovieDetailsActivity extends AppCompatActivity
         if (data == null) {
             return;
         }
-        determineIfFavorite(data.moveToFirst());
+        boolean favorite = data.moveToFirst();
+        determineIfFavorite(favorite);
+        if (favorite) {
+            mImage = data.getBlob(data.getColumnIndex(COLUMN_IMAGE));
+        }
+        setBackgroundImage();
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        // TODO should do something?
+        // Not implemented because not needed yet
     }
 
 }

@@ -58,7 +58,7 @@ public class MovieProvider extends ContentProvider {
                         sortOrder);
                 break;
             case CODE_MOVIE_WITH_ID:
-                String id = uri.getLastPathSegment();
+                String id = Long.toString(ContentUris.parseId(uri));
                 cursor = db.query(
                         TABLE_NAME,
                         projection,

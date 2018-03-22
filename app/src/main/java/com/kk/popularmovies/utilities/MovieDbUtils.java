@@ -1,11 +1,14 @@
 package com.kk.popularmovies.utilities;
 
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 
 import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.model.Movie;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +42,20 @@ public class MovieDbUtils {
             favoriteMovies.add(movie);
         }
         return favoriteMovies;
+    }
+
+    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+        return outputStream.toByteArray();
+    }
+
+    public Bitmap getImage(@NonNull Cursor cursor) {
+        if (cursor.moveToFirst()) {
+            byte[] image = cursor.getBlob(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE));
+            return BitmapFactory.decodeByteArray(image, 0, image.length);
+        }
+        return null;
     }
 
 }
