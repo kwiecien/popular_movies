@@ -38,14 +38,12 @@ import com.kk.popularmovies.model.Review;
 import com.kk.popularmovies.model.Trailer;
 import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.MovieDbUtils;
-import com.kk.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,6 +58,7 @@ import static com.kk.popularmovies.utilities.NetworkUtils.buildYouTubeTrailerUrl
 import static com.kk.popularmovies.utilities.NetworkUtils.getResponseFromHttpUrl;
 import static com.kk.popularmovies.utilities.NetworkUtils.isOnline;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
+import static java.util.Optional.ofNullable;
 
 public class MovieDetailsActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks {
@@ -115,7 +114,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
-        Optional.ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
+        ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
         supportPostponeEnterTransition();
 
         Bundle extras;
@@ -123,9 +122,9 @@ public class MovieDetailsActivity extends AppCompatActivity
             mMovie = (Movie) savedInstanceState.getSerializable(EXTRA_MOVIE);
         } else {
             Intent intent = getIntent();
-            extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
-            mMovie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
-            mTransitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
+            extras = ofNullable(intent).map(Intent::getExtras).orElse(null);
+            mMovie = ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
+            mTransitionName = ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
             mAdapterPosition = intent.getIntExtra(EXTRA_ADAPTER_POSITION, -1);
         }
         if (mMovie != null) {
@@ -167,17 +166,29 @@ public class MovieDetailsActivity extends AppCompatActivity
             return;
         }
         for (Review review : reviews) {
-            TextView authorView = new TextView(this);
-            authorView.setText(review.getAuthor());
-            authorView.setTypeface(Typeface.create("sans-serif-smallcaps", Typeface.NORMAL));
-            authorView.setTextColor(getColor(android.R.color.white));
-            authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-            TextView reviewView = new TextView(this);
-            reviewView.setText(String.format("%s%n", review.getContent()));
-            reviewView.setPadding(32, 0, 32, 0);
+            TextView authorView = createAuthorTextView(review);
+            TextView reviewView = createReviewTextView(review);
             mReviewsLl.addView(authorView);
             mReviewsLl.addView(reviewView);
         }
+    }
+
+    @NonNull
+    private TextView createAuthorTextView(Review review) {
+        TextView authorView = new TextView(this);
+        authorView.setText(review.getAuthor());
+        authorView.setTypeface(Typeface.create("sans-serif-smallcaps", Typeface.NORMAL));
+        authorView.setTextColor(getColor(android.R.color.white));
+        authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        return authorView;
+    }
+
+    @NonNull
+    private TextView createReviewTextView(Review review) {
+        TextView reviewView = new TextView(this);
+        reviewView.setText(String.format("%s%n", review.getContent()));
+        reviewView.setPadding(32, 0, 32, 0);
+        return reviewView;
     }
 
     private void setTrailers(List<Trailer> trailers) {
@@ -186,26 +197,33 @@ public class MovieDetailsActivity extends AppCompatActivity
             return;
         }
         mTrailersLl.setVisibility(View.VISIBLE);
-        mTrailerYtLink = NetworkUtils.buildYouTubeTrailerUrl(trailers.get(0).getKey());
         for (Trailer trailer : trailers) {
             TextView trailerView = new TextView(this);
-            trailerView.setPadding(0, 0, 32, 32);
-            trailerView.setText(trailer.getName());
-            trailerView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-            Drawable play = getDrawable(android.R.drawable.ic_media_play);
-            play.setBounds(new Rect(0, 0, 100, 100));
-            trailerView.setCompoundDrawablesRelative(play, null, null, null);
+            createTrailerTextView(trailer, trailerView);
             trailerView.setOnClickListener((View v) -> {
-                Uri appUri = Uri.parse("vnd.youtube:" + trailer.getKey());
-                Intent appIntent = new Intent(Intent.ACTION_VIEW, appUri);
-                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(buildYouTubeTrailerUrl(trailer.getKey())));
-                if (appIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(appIntent);
-                } else {
-                    startActivity(webIntent);
-                }
+                watchTrailer(trailer);
             });
             mTrailersLl.addView(trailerView);
+        }
+    }
+
+    private void createTrailerTextView(Trailer trailer, TextView trailerView) {
+        trailerView.setPadding(0, 0, 32, 32);
+        trailerView.setText(trailer.getName());
+        trailerView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        Drawable play = getDrawable(android.R.drawable.ic_media_play);
+        play.setBounds(new Rect(0, 0, 100, 100));
+        trailerView.setCompoundDrawablesRelative(play, null, null, null);
+    }
+
+    private void watchTrailer(Trailer trailer) {
+        Uri appUri = Uri.parse("vnd.youtube:" + trailer.getKey());
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, appUri);
+        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(buildYouTubeTrailerUrl(trailer.getKey())));
+        if (appIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(appIntent);
+        } else {
+            startActivity(webIntent);
         }
     }
 
@@ -256,7 +274,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     private void makeToast(String text) {
-        Optional.ofNullable(mToast).ifPresent(Toast::cancel);
+        ofNullable(mToast).ifPresent(Toast::cancel);
         mToast = Toast.makeText(MovieDetailsActivity.this, text, Toast.LENGTH_SHORT);
         mToast.show();
     }
@@ -381,6 +399,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                 @SuppressWarnings("unchecked")
                 List<Trailer> trailers = (List<Trailer>) data;
                 setTrailers(trailers);
+                mTrailerYtLink = buildYouTubeTrailerUrl(ofNullable(trailers).map(t -> t.get(0).getKey()).orElse(""));
             }
         }
         getSupportLoaderManager().destroyLoader(loader.getId());
