@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
-import android.widget.Toast;
 
 import com.kk.popularmovies.model.Movie;
 
@@ -26,7 +25,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "movie.db";
     private static final int DATABASE_VERSION = 2;
 
-
     public MovieDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -40,20 +38,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_IMAGE, image);
         contentValues.put(COLUMN_PLOT_SYNOPSIS, movie.getPlotSynopsis());
         contentValues.put(COLUMN_USER_RATING, movie.getUserRating());
-        Uri uri = context.getContentResolver().insert(CONTENT_URI, contentValues);
-        if (uri != null) {
-            Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
-        }
-        return uri;
+        return context.getContentResolver().insert(CONTENT_URI, contentValues);
     }
 
     public static int deleteMovieFromDb(Context context, Movie movie) {
         Uri uri = CONTENT_URI.buildUpon().appendPath(Long.toString(movie.getId())).build();
-        int deletedMovies = context.getContentResolver().delete(uri, null, null);
-        if (deletedMovies > 0) {
-            Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
-        }
-        return deletedMovies;
+        return context.getContentResolver().delete(uri, null, null);
     }
 
     @Override

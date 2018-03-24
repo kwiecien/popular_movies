@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -60,13 +61,15 @@ import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 public class MovieDetailsActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks {
 
+    public static final String EXTRA_ADAPTER_POSITION = "com.kk.popularmovies.extra_adapter_position";
+    public static final int RESULT_DELETED = 1234;
+    public static final int RESULT_NOT_DELETED = 1235;
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
-    private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra.transition";
+    private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra_transition";
     private static final int LOADER_MOVIE_BY_ID = LoaderId.MovieDetails.MOVIE_BY_ID;
     private static final int LOADER_MOVIE_REVIEWS = LoaderId.MovieDetails.MOVIE_REVIEWS;
     private static final int LOADER_MOVIE_TRAILERS = LoaderId.MovieDetails.MOVIE_TRAILERS;
     private static final float ALPHA = 0.10f;
-
     @BindView(R.id.movie_details_title_tv)
     TextView mMovieTv;
     @BindView(R.id.movie_details_release_date_tv)
@@ -83,11 +86,12 @@ public class MovieDetailsActivity extends AppCompatActivity
     LinearLayout mReviewsLl;
     @BindView(R.id.trailers_ll)
     LinearLayout mTrailersLl;
-
+    private int mAdapterPosition = -1;
     private Movie mMovie;
     private boolean mFavorite;
     private byte[] mImage;
     private String mTransitionName;
+    private Toast mToast;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -96,6 +100,10 @@ public class MovieDetailsActivity extends AppCompatActivity
         intent.putExtras(bundle);
         intent.putExtra(EXTRA_TRANSITION, movie.getTitle());
         return intent;
+    }
+
+    public static int wasMovieDeleted(Intent data) {
+        return data.getIntExtra(MovieDetailsActivity.EXTRA_ADAPTER_POSITION, 0);
     }
 
     @Override
@@ -114,6 +122,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             extras = Optional.ofNullable(intent).map(Intent::getExtras).orElse(null);
             mMovie = Optional.ofNullable(extras).map(ext -> (Movie) ext.getSerializable(EXTRA_MOVIE)).orElse(null);
             mTransitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
+            mAdapterPosition = intent.getIntExtra(EXTRA_ADAPTER_POSITION, -1);
         }
         if (mMovie != null) {
             setViewsContent();
@@ -204,14 +213,25 @@ public class MovieDetailsActivity extends AppCompatActivity
     private void onStarClicked() {
         if (mFavorite) {
             removeMovieFromFavorites();
+            setFavoriteResult(RESULT_DELETED, mAdapterPosition);
         } else {
             saveMovieAsFavorite();
+            setFavoriteResult(RESULT_NOT_DELETED, mAdapterPosition);
         }
         mStarTv.setImageResource(swapStar());
     }
 
+    private void setFavoriteResult(int resultCode, int adapterPosition) {
+        Intent data = new Intent();
+        data.putExtra(EXTRA_ADAPTER_POSITION, adapterPosition);
+        setResult(resultCode, data);
+    }
+
     private void removeMovieFromFavorites() {
-        deleteMovieFromDb(this, mMovie);
+        int count = deleteMovieFromDb(this, mMovie);
+        if (count > 0) {
+            makeToast("Removed from favorites");
+        }
     }
 
     private void saveMovieAsFavorite() {
@@ -222,9 +242,18 @@ public class MovieDetailsActivity extends AppCompatActivity
                     @Override
                     public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
                         mImage = MovieDbUtils.getBitmapAsByteArray(resource);
-                        insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
+                        Uri uri = insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
+                        if (uri != null) {
+                            makeToast("Added to favorites");
+                        }
                     }
                 });
+    }
+
+    private void makeToast(String text) {
+        Optional.ofNullable(mToast).ifPresent(Toast::cancel);
+        mToast = Toast.makeText(MovieDetailsActivity.this, text, Toast.LENGTH_SHORT);
+        mToast.show();
     }
 
     private void setBackgroundImage(Cursor data) {

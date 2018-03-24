@@ -1,6 +1,7 @@
 package com.kk.popularmovies;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -51,6 +52,7 @@ public class MoviePostersFragment extends Fragment implements
     private static final int ID_FAVORITE_MOVIES_LOADER = LoaderId.MoviePosters.FAVORITE_MOVIES;
     private static final int ID_TOP_RATED_MOVIES_LOADER = LoaderId.MoviePosters.TOP_RATED_MOVIES;
     private static final int ID_POPULAR_MOVIES_LOADER = LoaderId.MoviePosters.POPULAR_MOVIES;
+    private static final int REQUEST_CODE_ADAPTER_POSITION = 1;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
@@ -79,14 +81,6 @@ public class MoviePostersFragment extends Fragment implements
             loadMoviesData();
         }
         return rootView;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mSortOrder == SortOrder.FAVORITES) { // [QUESTION] How should I correctly handle Cursors/Loaders?
-            loadMoviesDataFromDatabase();
-        }
     }
 
     @Override
@@ -128,9 +122,13 @@ public class MoviePostersFragment extends Fragment implements
     private SortOrder retrieveDefaultSortOrder() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String defaultSortOrder = preferences.getString(getResources().getString(R.string.sort_order_key), "");
-        return defaultSortOrder.equals(getResources().getString(R.string.pref_sort_popular)) ?
-                SortOrder.POPULAR :
-                SortOrder.TOP_RATED;
+        if (defaultSortOrder.equals(getResources().getString(R.string.pref_sort_popular))) {
+            return SortOrder.POPULAR;
+        } else if (defaultSortOrder.equals(getResources().getString(R.string.pref_sort_top_rated))) {
+            return SortOrder.TOP_RATED;
+        } else {
+            return SortOrder.FAVORITES;
+        }
     }
 
     private void loadMoviesData() {
@@ -201,10 +199,23 @@ public class MoviePostersFragment extends Fragment implements
     }
 
     @Override
-    public void onClick(Movie movie, ImageView sharedImageView) {
+    public void onClick(Movie movie, ImageView sharedImageView, int adapterPosition) {
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 getActivity(), sharedImageView, ViewCompat.getTransitionName(sharedImageView));
-        startActivity(MovieDetailsActivity.newIntent(getActivity(), movie), options.toBundle());
+        Intent intent = MovieDetailsActivity.newIntent(getActivity(), movie);
+        intent.putExtra(MovieDetailsActivity.EXTRA_ADAPTER_POSITION, adapterPosition);
+        startActivityForResult(intent, REQUEST_CODE_ADAPTER_POSITION, options.toBundle());
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == MovieDetailsActivity.RESULT_DELETED && requestCode == REQUEST_CODE_ADAPTER_POSITION) {
+            int adapterPosition = MovieDetailsActivity.wasMovieDeleted(data);
+            if (mSortOrder == SortOrder.FAVORITES) {
+                mMoviesAdapter.getMovies().remove(adapterPosition);
+                mMoviesAdapter.notifyDataSetChanged();
+            }
+        }
     }
 
     @Override
