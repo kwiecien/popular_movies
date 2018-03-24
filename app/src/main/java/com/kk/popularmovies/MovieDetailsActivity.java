@@ -160,13 +160,11 @@ public class MovieDetailsActivity extends AppCompatActivity
         } else {
             saveMovieAsFavorite();
         }
+        mStarTv.setImageResource(swapStar());
     }
 
     private void removeMovieFromFavorites() {
-        int deletedMovies = deleteMovieFromDb(this, mMovie);
-        if (deletedMovies > 0) {
-            mStarTv.setImageResource(swapStar());
-        }
+        deleteMovieFromDb(this, mMovie);
     }
 
     private void setBackgroundImage(Cursor data) {
@@ -249,8 +247,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         mFavorite = data.moveToFirst();
         setCorrectStarImage();
         setBackgroundImage(data);
-        // data.close(); // QUESTION
-        // If I don't close it, there is wrong behavior of the app. Why?
+        getSupportLoaderManager().destroyLoader(loader.getId());
     }
 
     private void saveMovieAsFavorite() {

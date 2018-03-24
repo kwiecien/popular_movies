@@ -81,6 +81,14 @@ public class MoviePostersFragment extends Fragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mSortOrder == SortOrder.FAVORITES) { // [QUESTION] How should I correctly handle Cursors/Loaders?
+            loadMoviesDataFromDatabase();
+        }
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         MenuItem sortOrderMenuItem = menu.findItem(R.id.sort_order_item);
@@ -241,27 +249,17 @@ public class MoviePostersFragment extends Fragment implements
 
     @Override
     public void onLoaderReset(@NonNull Loader loader) {
-        int a = 5;
-        // mMoviesAdapter.setMoviesData(null);
+        mMoviesAdapter.setMoviesData(null);
     }
 
     public static class InternetAsyncTaskLoader extends AsyncTaskLoader<Movie[]> {
 
         SortOrder sortOrder;
-        Movie[] movies = null;
 
         public InternetAsyncTaskLoader(@NonNull Context context, SortOrder sortOrder) {
             super(context);
             this.sortOrder = sortOrder;
-        }
-
-        @Override
-        protected void onStartLoading() {
-            if (movies != null) {
-                deliverResult(movies);
-            } else {
-                forceLoad();
-            }
+            forceLoad();
         }
 
         @Nullable
@@ -279,11 +277,6 @@ public class MoviePostersFragment extends Fragment implements
             return movies;
         }
 
-        @Override
-        public void deliverResult(@Nullable Movie[] data) {
-            movies = data;
-            super.deliverResult(data);
-        }
     }
 
 }
