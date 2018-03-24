@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +71,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         }
 
         private void bind(int position, Context context) {
+            calculatePosterSize(context);
             Movie movie = mMovies.get(position);
             String imageThumbnail = movie.getImageThumbnail();
             if (movie.getImage().length > 0) {
@@ -84,6 +86,15 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
                         .into(mPosterIv);
             }
             ViewCompat.setTransitionName(mPosterIv, movie.getTitle());
+        }
+
+        private void calculatePosterSize(Context context) {
+            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+            float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+            int imageWidth = (int) (dpWidth);
+            int imageHeight = imageWidth * 2;
+            mPosterIv.setMinimumHeight(imageHeight);
+            mPosterIv.setMaxHeight(imageHeight);
         }
 
         @Override

@@ -3,6 +3,8 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -40,6 +42,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MoviePostersFragment extends Fragment implements
         MoviesAdapter.MoviesAdapterOnClickHandler,
@@ -105,7 +108,7 @@ public class MoviePostersFragment extends Fragment implements
         int spanCount = calculateNumberOfColumns(getActivity());
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), spanCount);
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setHasFixedSize(false);
 
         mMoviesAdapter = new MoviesAdapter(this, getContext());
         mRecyclerView.setAdapter(mMoviesAdapter);
@@ -122,7 +125,6 @@ public class MoviePostersFragment extends Fragment implements
     private void showMoviesDataView() {
         mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
-        // mRecyclerView.smoothScrollToPosition(0); // TODO keep it?
     }
 
     private SortOrder retrieveDefaultSortOrder() {
@@ -146,11 +148,22 @@ public class MoviePostersFragment extends Fragment implements
     }
 
     private void loadMoviesDataFromInternet() {
-        if (mSortOrder == SortOrder.TOP_RATED) {
-            initLoader(ID_TOP_RATED_MOVIES_LOADER);
+        if (isOnline()) {
+            if (mSortOrder == SortOrder.TOP_RATED) {
+                initLoader(ID_TOP_RATED_MOVIES_LOADER);
+            } else {
+                initLoader(ID_POPULAR_MOVIES_LOADER);
+            }
         } else {
-            initLoader(ID_POPULAR_MOVIES_LOADER);
+            showInternetErrorMessage();
         }
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void initLoader(int loaderId) {
@@ -242,7 +255,7 @@ public class MoviePostersFragment extends Fragment implements
         if (loader.getId() == ID_FAVORITE_MOVIES_LOADER) {
             showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList((Cursor) data));
         } else {
-            showMoviesOrError(Arrays.asList((Movie[]) data));
+            showMoviesOrError(Optional.ofNullable(data).map(movies -> Arrays.asList((Movie[]) movies)).orElse(null));
         }
         getActivity().getSupportLoaderManager().destroyLoader(loader.getId());
     }
