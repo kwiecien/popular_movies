@@ -57,20 +57,12 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL buildYouTubeTrailerUrl(String key) {
-        String YOUTUBE_BASE_URL = "https://www.youtube.com";
-        Uri uri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+    public static String buildYouTubeTrailerUrl(String key) {
+        Uri uri = Uri.parse("https://www.youtube.com").buildUpon()
                 .appendPath("video")
                 .appendQueryParameter("v", key)
                 .build();
-        URL url = null;
-        try {
-            url = new URL(uri.toString());
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-        logBuiltUri(url);
-        return url;
+        return uri.toString();
     }
 
     public static URL buildReviewsUrl(long id, String apiKey) {

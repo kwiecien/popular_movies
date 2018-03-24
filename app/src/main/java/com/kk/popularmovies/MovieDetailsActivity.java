@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,6 +18,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -32,7 +35,6 @@ import com.kk.popularmovies.model.Review;
 import com.kk.popularmovies.model.Trailer;
 import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.MovieDbUtils;
-import com.kk.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -48,6 +50,11 @@ import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_IMAGE;
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.kk.popularmovies.data.MovieDbHelper.deleteMovieFromDb;
 import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
+import static com.kk.popularmovies.utilities.NetworkUtils.buildReviewsUrl;
+import static com.kk.popularmovies.utilities.NetworkUtils.buildTrailersUrl;
+import static com.kk.popularmovies.utilities.NetworkUtils.buildYouTubeTrailerUrl;
+import static com.kk.popularmovies.utilities.NetworkUtils.getResponseFromHttpUrl;
+import static com.kk.popularmovies.utilities.NetworkUtils.isOnline;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 
 public class MovieDetailsActivity extends AppCompatActivity
@@ -154,7 +161,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             TextView reviewView = new TextView(this);
             reviewView.setText(String.format("%s%n", review.getContent()));
-            reviewView.setPadding(32, 0, 0, 0);
+            reviewView.setPadding(32, 0, 32, 0);
             mReviewsLl.addView(authorView);
             mReviewsLl.addView(reviewView);
         }
@@ -168,7 +175,22 @@ public class MovieDetailsActivity extends AppCompatActivity
         mTrailersLl.setVisibility(View.VISIBLE);
         for (Trailer trailer : trailers) {
             TextView trailerView = new TextView(this);
-            trailerView.setText(NetworkUtils.buildYouTubeTrailerUrl(trailer.getKey()).toString());
+            trailerView.setPadding(0, 0, 32, 32);
+            trailerView.setText(trailer.getName());
+            trailerView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+            Drawable play = getDrawable(android.R.drawable.ic_media_play);
+            play.setBounds(new Rect(0, 0, 100, 100));
+            trailerView.setCompoundDrawablesRelative(play, null, null, null);
+            trailerView.setOnClickListener((View v) -> {
+                Uri appUri = Uri.parse("vnd.youtube:" + trailer.getKey());
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, appUri);
+                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(buildYouTubeTrailerUrl(trailer.getKey())));
+                if (appIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(appIntent);
+                } else {
+                    startActivity(webIntent);
+                }
+            });
             mTrailersLl.addView(trailerView);
         }
     }
@@ -295,7 +317,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             mFavorite = cursor.moveToFirst();
             setCorrectStarImage();
             setBackgroundImage(cursor);
-            if (NetworkUtils.isOnline(this)) {
+            if (isOnline(this)) {
                 fetchReviewsAndTrailers();
             } else {
                 findViewById(R.id.movie_details_bonus_info_ll).setVisibility(View.GONE);
@@ -339,9 +361,9 @@ public class MovieDetailsActivity extends AppCompatActivity
         public List<Review> loadInBackground() {
             List<Review> reviews = null;
             String apiKey = getContext().getResources().getString(R.string.API_KEY_TMDB);
-            URL reviewsRequestUrl = NetworkUtils.buildReviewsUrl(movie.getId(), apiKey);
+            URL reviewsRequestUrl = buildReviewsUrl(movie.getId(), apiKey);
             try {
-                String jsonReviewsResponse = NetworkUtils.getResponseFromHttpUrl(reviewsRequestUrl);
+                String jsonReviewsResponse = getResponseFromHttpUrl(reviewsRequestUrl);
                 reviews = JsonUtils.getReviewsFromJson(jsonReviewsResponse);
             } catch (Exception e) {
                 Log.e(MovieDetailsActivity.ReviewsAsyncTaskLoader.class.getSimpleName(), e.getLocalizedMessage());
@@ -365,9 +387,9 @@ public class MovieDetailsActivity extends AppCompatActivity
         public List<Trailer> loadInBackground() {
             List<Trailer> trailers = null;
             String apiKey = getContext().getResources().getString(R.string.API_KEY_TMDB);
-            URL trailersRequestUrl = NetworkUtils.buildTrailersUrl(movie.getId(), apiKey);
+            URL trailersRequestUrl = buildTrailersUrl(movie.getId(), apiKey);
             try {
-                String jsonTrailersResponse = NetworkUtils.getResponseFromHttpUrl(trailersRequestUrl);
+                String jsonTrailersResponse = getResponseFromHttpUrl(trailersRequestUrl);
                 trailers = JsonUtils.getTrailersFromJson(jsonTrailersResponse);
             } catch (Exception e) {
                 Log.e(MovieDetailsActivity.TrailersAsyncTaskLoader.class.getSimpleName(), e.getLocalizedMessage());
