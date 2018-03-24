@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -19,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,6 +38,7 @@ import com.kk.popularmovies.model.Review;
 import com.kk.popularmovies.model.Trailer;
 import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.MovieDbUtils;
+import com.kk.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -92,6 +95,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     private byte[] mImage;
     private String mTransitionName;
     private Toast mToast;
+    private String mTrailerYtLink;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -182,6 +186,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             return;
         }
         mTrailersLl.setVisibility(View.VISIBLE);
+        mTrailerYtLink = NetworkUtils.buildYouTubeTrailerUrl(trailers.get(0).getKey());
         for (Trailer trailer : trailers) {
             TextView trailerView = new TextView(this);
             trailerView.setPadding(0, 0, 32, 32);
@@ -293,9 +298,25 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.movie_details_menu, menu);
+        return true;
+    }
+
+    private Intent createShareTrailerIntent() {
+        return ShareCompat.IntentBuilder.from(this)
+                .setChooserTitle("Share trailer")
+                .setType("text/plain")
+                .setText(mTrailerYtLink)
+                .getIntent();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+        } else if (item.getItemId() == R.id.menu_item_share_action) {
+            item.setIntent(createShareTrailerIntent());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -353,9 +374,13 @@ public class MovieDetailsActivity extends AppCompatActivity
             }
         } else {
             if (loader.getId() == LOADER_MOVIE_REVIEWS) {
-                setReviews((List<Review>) data);
+                @SuppressWarnings("unchecked")
+                List<Review> reviews = (List<Review>) data;
+                setReviews(reviews);
             } else if (loader.getId() == LOADER_MOVIE_TRAILERS) {
-                setTrailers((List<Trailer>) data);
+                @SuppressWarnings("unchecked")
+                List<Trailer> trailers = (List<Trailer>) data;
+                setTrailers(trailers);
             }
         }
         getSupportLoaderManager().destroyLoader(loader.getId());
