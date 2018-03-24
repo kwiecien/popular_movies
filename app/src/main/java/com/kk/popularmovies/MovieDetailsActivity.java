@@ -4,15 +4,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,10 +28,16 @@ import com.bumptech.glide.request.transition.Transition;
 import com.kk.popularmovies.data.MovieContract;
 import com.kk.popularmovies.enums.LoaderId;
 import com.kk.popularmovies.model.Movie;
+import com.kk.popularmovies.model.Review;
+import com.kk.popularmovies.model.Trailer;
+import com.kk.popularmovies.utilities.JsonUtils;
 import com.kk.popularmovies.utilities.MovieDbUtils;
+import com.kk.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -40,11 +51,13 @@ import static com.kk.popularmovies.data.MovieDbHelper.insertMovieToDb;
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.getReleaseYear;
 
 public class MovieDetailsActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks {
 
     private static final String EXTRA_MOVIE = "com.kk.popularmovies.extra_movie";
     private static final String EXTRA_TRANSITION = "com.kk.popularmovies.extra.transition";
     private static final int LOADER_MOVIE_BY_ID = LoaderId.MovieDetails.MOVIE_BY_ID;
+    private static final int LOADER_MOVIE_REVIEWS = LoaderId.MovieDetails.MOVIE_REVIEWS;
+    private static final int LOADER_MOVIE_TRAILERS = LoaderId.MovieDetails.MOVIE_TRAILERS;
     private static final float ALPHA = 0.10f;
 
     @BindView(R.id.movie_details_title_tv)
@@ -62,7 +75,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     @BindView(R.id.reviews_ll)
     LinearLayout mReviewsLl;
     @BindView(R.id.trailers_ll)
-    LinearLayout trailersLl;
+    LinearLayout mTrailersLl;
 
     private Movie mMovie;
     private boolean mFavorite;
@@ -86,7 +99,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         Optional.ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
         supportPostponeEnterTransition();
 
-        Bundle extras = null;
+        Bundle extras;
         if (savedInstanceState != null) {
             mMovie = (Movie) savedInstanceState.getSerializable(EXTRA_MOVIE);
         } else {
@@ -96,9 +109,9 @@ public class MovieDetailsActivity extends AppCompatActivity
             mTransitionName = Optional.ofNullable(extras).map(ext -> ext.getString(EXTRA_TRANSITION)).orElse(null);
         }
         if (mMovie != null) {
-            getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
             setViewsContent();
             setOnClickListeners();
+            getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
         }
     }
 
@@ -108,8 +121,6 @@ public class MovieDetailsActivity extends AppCompatActivity
         mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
         mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
         mBackgroundIv.setAlpha(ALPHA);
-        setReviews();
-        setTrailers();
     }
 
     private void setCorrectStarImage() {
@@ -130,22 +141,36 @@ public class MovieDetailsActivity extends AppCompatActivity
         }
     }
 
-    private void setReviews() {
-        TextView textView1 = new TextView(this);
-        textView1.setText("Review 1\nReview 1\nReview 1\nReview 1\n");
-        TextView textView2 = new TextView(this);
-        textView2.setText("Review 2\nReview 2\nReview 2\nReview 2\n");
-        mReviewsLl.addView(textView1);
-        mReviewsLl.addView(textView2);
+    private void setReviews(List<Review> reviews) {
+        if (reviews.isEmpty()) {
+            findViewById(R.id.movie_details_reviews_section).setVisibility(View.GONE);
+            return;
+        }
+        for (Review review : reviews) {
+            TextView authorView = new TextView(this);
+            authorView.setText(review.getAuthor());
+            authorView.setTypeface(Typeface.create("sans-serif-smallcaps", Typeface.NORMAL));
+            authorView.setTextColor(getColor(android.R.color.white));
+            authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            TextView reviewView = new TextView(this);
+            reviewView.setText(String.format("%s%n", review.getContent()));
+            reviewView.setPadding(32, 0, 0, 0);
+            mReviewsLl.addView(authorView);
+            mReviewsLl.addView(reviewView);
+        }
     }
 
-    private void setTrailers() {
-        TextView textView1 = new TextView(this);
-        textView1.setText("Trailer 1");
-        TextView textView2 = new TextView(this);
-        textView2.setText("Trailer 2");
-        trailersLl.addView(textView1);
-        trailersLl.addView(textView2);
+    private void setTrailers(List<Trailer> trailers) {
+        if (trailers.isEmpty()) {
+            findViewById(R.id.movie_details_trailers_section).setVisibility(View.GONE);
+            return;
+        }
+        mTrailersLl.setVisibility(View.VISIBLE);
+        for (Trailer trailer : trailers) {
+            TextView trailerView = new TextView(this);
+            trailerView.setText(NetworkUtils.buildYouTubeTrailerUrl(trailer.getKey()).toString());
+            mTrailersLl.addView(trailerView);
+        }
     }
 
     private void setOnClickListeners() {
@@ -167,6 +192,19 @@ public class MovieDetailsActivity extends AppCompatActivity
         deleteMovieFromDb(this, mMovie);
     }
 
+    private void saveMovieAsFavorite() {
+        Glide.with(this)
+                .asBitmap()
+                .load(mMovie.getImageThumbnail())
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+                        mImage = MovieDbUtils.getBitmapAsByteArray(resource);
+                        insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
+                    }
+                });
+    }
+
     private void setBackgroundImage(Cursor data) {
         mBackgroundIv.setTransitionName(mTransitionName);
         if (mFavorite) {
@@ -177,10 +215,6 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     private void fetchImageFromDb(Cursor data) {
-        // QUESTION
-        // If I click star, the posters are set into recycler view, but their size is weird...
-        // Sometimes they are twice as high, as they should be...
-        // Why? How to correct it?
         mImage = getImageFromDb(data);
         Glide.with(this)
                 .load(mImage)
@@ -223,44 +257,62 @@ public class MovieDetailsActivity extends AppCompatActivity
 
     @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle bundle) {
+    public Loader onCreateLoader(int loaderId, @Nullable Bundle bundle) {
         switch (loaderId) {
             case LOADER_MOVIE_BY_ID:
-                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI.buildUpon()
-                        .appendPath(Long.toString(mMovie.getId())).build();
-                return new CursorLoader(this,
-                        movieQueryUri,
-                        new String[]{COLUMN_MOVIE_ID, COLUMN_IMAGE},
-                        null,
-                        null,
-                        null);
+                Log.d(MovieDetailsActivity.class.getSimpleName(), "Loading movie by id...");
+                return newCursorLoader();
+            case LOADER_MOVIE_REVIEWS:
+                Log.d(MovieDetailsActivity.class.getSimpleName(), "Loading movie reviews...");
+                return new ReviewsAsyncTaskLoader(this, mMovie);
+            case LOADER_MOVIE_TRAILERS:
+                Log.d(MovieDetailsActivity.class.getSimpleName(), "Loading movie trailers...");
+                return new TrailersAsyncTaskLoader(this, mMovie);
             default:
                 throw new UnsupportedOperationException("LoaderId not implemented: " + loaderId);
         }
     }
 
+    @NonNull
+    private Loader newCursorLoader() {
+        Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI.buildUpon()
+                .appendPath(Long.toString(mMovie.getId())).build();
+        return new CursorLoader(this,
+                movieQueryUri,
+                new String[]{COLUMN_MOVIE_ID, COLUMN_IMAGE},
+                null,
+                null,
+                null);
+    }
+
     @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        if (data == null) {
-            return;
+    public void onLoadFinished(@NonNull Loader loader, Object data) {
+        if (loader.getId() == LOADER_MOVIE_BY_ID) {
+            Cursor cursor = (Cursor) data;
+            if (cursor == null) {
+                return;
+            }
+            mFavorite = cursor.moveToFirst();
+            setCorrectStarImage();
+            setBackgroundImage(cursor);
+            if (NetworkUtils.isOnline(this)) {
+                fetchReviewsAndTrailers();
+            } else {
+                findViewById(R.id.movie_details_bonus_info_ll).setVisibility(View.GONE);
+            }
+        } else {
+            if (loader.getId() == LOADER_MOVIE_REVIEWS) {
+                setReviews((List<Review>) data);
+            } else if (loader.getId() == LOADER_MOVIE_TRAILERS) {
+                setTrailers((List<Trailer>) data);
+            }
         }
-        mFavorite = data.moveToFirst();
-        setCorrectStarImage();
-        setBackgroundImage(data);
         getSupportLoaderManager().destroyLoader(loader.getId());
     }
 
-    private void saveMovieAsFavorite() {
-        Glide.with(this)
-                .asBitmap()
-                .load(mMovie.getImageThumbnail())
-                .into(new SimpleTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
-                        mImage = MovieDbUtils.getBitmapAsByteArray(resource);
-                        insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
-                    }
-                });
+    private void fetchReviewsAndTrailers() {
+        getSupportLoaderManager().initLoader(LOADER_MOVIE_REVIEWS, null, this);
+        getSupportLoaderManager().initLoader(LOADER_MOVIE_TRAILERS, null, this);
     }
 
     private byte[] getImageFromDb(Cursor data) {
@@ -268,8 +320,60 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader loader) {
         // Not implemented because not needed yet
+    }
+
+    public static class ReviewsAsyncTaskLoader extends AsyncTaskLoader<List<Review>> {
+
+        private final Movie movie;
+
+        ReviewsAsyncTaskLoader(@NonNull Context context, Movie movie) {
+            super(context);
+            this.movie = movie;
+            forceLoad();
+        }
+
+        @Nullable
+        @Override
+        public List<Review> loadInBackground() {
+            List<Review> reviews = null;
+            String apiKey = getContext().getResources().getString(R.string.API_KEY_TMDB);
+            URL reviewsRequestUrl = NetworkUtils.buildReviewsUrl(movie.getId(), apiKey);
+            try {
+                String jsonReviewsResponse = NetworkUtils.getResponseFromHttpUrl(reviewsRequestUrl);
+                reviews = JsonUtils.getReviewsFromJson(jsonReviewsResponse);
+            } catch (Exception e) {
+                Log.e(MovieDetailsActivity.ReviewsAsyncTaskLoader.class.getSimpleName(), e.getLocalizedMessage());
+            }
+            return reviews;
+        }
+    }
+
+    public static class TrailersAsyncTaskLoader extends AsyncTaskLoader<List<Trailer>> {
+
+        private final Movie movie;
+
+        TrailersAsyncTaskLoader(@NonNull Context context, Movie movie) {
+            super(context);
+            this.movie = movie;
+            forceLoad();
+        }
+
+        @Nullable
+        @Override
+        public List<Trailer> loadInBackground() {
+            List<Trailer> trailers = null;
+            String apiKey = getContext().getResources().getString(R.string.API_KEY_TMDB);
+            URL trailersRequestUrl = NetworkUtils.buildTrailersUrl(movie.getId(), apiKey);
+            try {
+                String jsonTrailersResponse = NetworkUtils.getResponseFromHttpUrl(trailersRequestUrl);
+                trailers = JsonUtils.getTrailersFromJson(jsonTrailersResponse);
+            } catch (Exception e) {
+                Log.e(MovieDetailsActivity.TrailersAsyncTaskLoader.class.getSimpleName(), e.getLocalizedMessage());
+            }
+            return trailers;
+        }
     }
 
 }

@@ -3,8 +3,9 @@ package com.kk.popularmovies.enums;
 public class LoaderId {
 
     public static class MovieDetails {
-        public static final int FAVORITE_MOVIES = 100;
-        public static final int MOVIE_BY_ID = 101;
+        public static final int MOVIE_BY_ID = 100;
+        public static final int MOVIE_REVIEWS = 101;
+        public static final int MOVIE_TRAILERS = 102;
     }
 
     public static class MoviePosters {

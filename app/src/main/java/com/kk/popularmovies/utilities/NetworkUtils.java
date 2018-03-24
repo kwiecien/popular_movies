@@ -1,5 +1,8 @@
 package com.kk.popularmovies.utilities;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
 
@@ -54,6 +57,22 @@ public class NetworkUtils {
         return url;
     }
 
+    public static URL buildYouTubeTrailerUrl(String key) {
+        String YOUTUBE_BASE_URL = "https://www.youtube.com";
+        Uri uri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+                .appendPath("video")
+                .appendQueryParameter("v", key)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+        logBuiltUri(url);
+        return url;
+    }
+
     public static URL buildReviewsUrl(long id, String apiKey) {
         Uri uri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
                 .appendPath(Long.toString(id))
@@ -85,6 +104,12 @@ public class NetworkUtils {
                 return null;
             }
         }
+    }
+
+    public static boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }

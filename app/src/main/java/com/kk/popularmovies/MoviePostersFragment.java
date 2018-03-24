@@ -3,8 +3,6 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -148,7 +146,7 @@ public class MoviePostersFragment extends Fragment implements
     }
 
     private void loadMoviesDataFromInternet() {
-        if (isOnline()) {
+        if (NetworkUtils.isOnline(getActivity())) {
             if (mSortOrder == SortOrder.TOP_RATED) {
                 initLoader(ID_TOP_RATED_MOVIES_LOADER);
             } else {
@@ -157,13 +155,6 @@ public class MoviePostersFragment extends Fragment implements
         } else {
             showInternetErrorMessage();
         }
-    }
-
-    public boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void initLoader(int loaderId) {
@@ -230,14 +221,7 @@ public class MoviePostersFragment extends Fragment implements
         switch (loaderId) {
             case ID_FAVORITE_MOVIES_LOADER:
                 Log.d(MoviePostersFragment.class.getSimpleName(), "Loading favorite movies...");
-                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
-                String sortOrder = MovieContract.MovieEntry._ID + " ASC";
-                return new CursorLoader(getContext(),
-                        movieQueryUri,
-                        null,
-                        null,
-                        null,
-                        sortOrder);
+                return newCursorLoader();
             case ID_TOP_RATED_MOVIES_LOADER:
                 Log.d(MoviePostersFragment.class.getSimpleName(), "Loading top rated movies...");
                 return new InternetAsyncTaskLoader(getActivity(), SortOrder.TOP_RATED);
@@ -247,6 +231,18 @@ public class MoviePostersFragment extends Fragment implements
             default:
                 throw new UnsupportedOperationException("LoaderId not implemented: " + loaderId);
         }
+    }
+
+    @NonNull
+    private Loader newCursorLoader() {
+        Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
+        String sortOrder = MovieContract.MovieEntry._ID + " ASC";
+        return new CursorLoader(getContext(),
+                movieQueryUri,
+                null,
+                null,
+                null,
+                sortOrder);
     }
 
     @Override

@@ -73,14 +73,13 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         private void bind(int position, Context context) {
             calculatePosterSize(context);
             Movie movie = mMovies.get(position);
-            String imageThumbnail = movie.getImageThumbnail();
             if (movie.getImage().length > 0) {
                 Glide.with(context)
                         .load(movie.getImage())
                         .into(mPosterIv);
             } else {
                 Picasso.with(context)
-                        .load(imageThumbnail)
+                        .load(movie.getImageThumbnail())
                         .placeholder(android.R.drawable.stat_sys_download)
                         .error(android.R.drawable.stat_notify_error)
                         .into(mPosterIv);
