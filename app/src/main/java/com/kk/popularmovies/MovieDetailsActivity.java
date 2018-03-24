@@ -249,7 +249,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         mFavorite = data.moveToFirst();
         setCorrectStarImage();
         setBackgroundImage(data);
-        data.close(); // QUESTION
+        // data.close(); // QUESTION
         // If I don't close it, there is wrong behavior of the app. Why?
     }
 
@@ -261,10 +261,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                     @Override
                     public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
                         mImage = MovieDbUtils.getBitmapAsByteArray(resource);
-                        Uri insertedUri = insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
-                        if (insertedUri != null) {
-                            mStarTv.setImageResource(swapStar());
-                        }
+                        insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
                     }
                 });
     }

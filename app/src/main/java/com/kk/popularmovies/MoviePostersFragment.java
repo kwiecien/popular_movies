@@ -4,13 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
@@ -41,12 +41,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MoviePostersFragment extends Fragment
-        implements MoviesAdapter.MoviesAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Cursor> {
+public class MoviePostersFragment extends Fragment implements
+        MoviesAdapter.MoviesAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks {
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
     private static final String EXTRA_SORT_ORDER = "com.kk.popularmovies.extra_sort_order";
     private static final int ID_FAVORITE_MOVIES_LOADER = LoaderId.MoviePosters.FAVORITE_MOVIES;
+    private static final int ID_TOP_RATED_MOVIES_LOADER = LoaderId.MoviePosters.TOP_RATED_MOVIES;
+    private static final int ID_POPULAR_MOVIES_LOADER = LoaderId.MoviePosters.POPULAR_MOVIES;
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
@@ -72,7 +75,7 @@ public class MoviePostersFragment extends Fragment
             showMoviesOrError(movies);
         } else {
             mSortOrder = retrieveDefaultSortOrder();
-            loadMoviesData(mSortOrder);
+            loadMoviesData();
         }
         return rootView;
     }
@@ -122,20 +125,28 @@ public class MoviePostersFragment extends Fragment
                 SortOrder.TOP_RATED;
     }
 
-    private void loadMoviesData(SortOrder sortOrder) {
-        if (sortOrder == SortOrder.FAVORITES) {
+    private void loadMoviesData() {
+        if (mSortOrder == SortOrder.FAVORITES) {
             loadMoviesDataFromDatabase();
         } else {
-            loadMoviesDataFromInternet(sortOrder);
+            loadMoviesDataFromInternet();
         }
     }
 
     private void loadMoviesDataFromDatabase() {
-        getActivity().getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, this);
+        initLoader(ID_FAVORITE_MOVIES_LOADER);
     }
 
-    private void loadMoviesDataFromInternet(SortOrder sortOrder) {
-        new FetchMoviesAsyncTask().execute(sortOrder);
+    private void loadMoviesDataFromInternet() {
+        if (mSortOrder == SortOrder.TOP_RATED) {
+            initLoader(ID_TOP_RATED_MOVIES_LOADER);
+        } else {
+            initLoader(ID_POPULAR_MOVIES_LOADER);
+        }
+    }
+
+    private void initLoader(int loaderId) {
+        getActivity().getSupportLoaderManager().initLoader(loaderId, null, this);
     }
 
     private void showMoviesOrError(List<Movie> movies) {
@@ -165,9 +176,9 @@ public class MoviePostersFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sort_order_item:
-                mSortOrder = SortOrder.swap(mSortOrder);
+                mSortOrder = mSortOrder.swap();
                 item.setTitle(mSortOrder.getStringRepresentation());
-                loadMoviesData(mSortOrder);
+                loadMoviesData();
                 return true;
             case R.id.action_settings:
                 startActivity(SettingsActivity.newIntent(getActivity()));
@@ -193,9 +204,11 @@ public class MoviePostersFragment extends Fragment
 
     @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle bundle) {
+    public Loader onCreateLoader(int loaderId, @Nullable Bundle bundle) {
+        mLoadingIndicator.setVisibility(View.VISIBLE);
         switch (loaderId) {
             case ID_FAVORITE_MOVIES_LOADER:
+                Log.d(MoviePostersFragment.class.getSimpleName(), "Loading favorite movies...");
                 Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
                 String sortOrder = MovieContract.MovieEntry._ID + " ASC";
                 return new CursorLoader(getContext(),
@@ -204,63 +217,73 @@ public class MoviePostersFragment extends Fragment
                         null,
                         null,
                         sortOrder);
+            case ID_TOP_RATED_MOVIES_LOADER:
+                Log.d(MoviePostersFragment.class.getSimpleName(), "Loading top rated movies...");
+                return new InternetAsyncTaskLoader(getActivity(), SortOrder.TOP_RATED);
+            case ID_POPULAR_MOVIES_LOADER:
+                Log.d(MoviePostersFragment.class.getSimpleName(), "Loading popular movies...");
+                return new InternetAsyncTaskLoader(getActivity(), SortOrder.POPULAR);
             default:
                 throw new UnsupportedOperationException("LoaderId not implemented: " + loaderId);
         }
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        if (mSortOrder == SortOrder.FAVORITES) { // QUESTION
-            // Why do I have to check that? If I don't, weird things happen:
-            // 1. I am on the top rated/poplar screen and select a movie
-            // 2. I touch a star on a details screen
-            // 3. When I go back, this method is invoked.
-            //
-            // I think this behavior is connected with Cursor and notifying it.
-            // Could you tell me more how I should handle this situation?
-            showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList(data));
+    public void onLoadFinished(@NonNull Loader loader, Object data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (loader.getId() == ID_FAVORITE_MOVIES_LOADER) {
+            showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList((Cursor) data));
+        } else {
+            showMoviesOrError(Arrays.asList((Movie[]) data));
         }
+        getActivity().getSupportLoaderManager().destroyLoader(loader.getId());
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        mMoviesAdapter.setMoviesData(null);
+    public void onLoaderReset(@NonNull Loader loader) {
+        int a = 5;
+        // mMoviesAdapter.setMoviesData(null);
     }
 
-    private class FetchMoviesAsyncTask extends AsyncTask<SortOrder, Void, Movie[]> {
+    public static class InternetAsyncTaskLoader extends AsyncTaskLoader<Movie[]> {
 
-        private final String TAG = FetchMoviesAsyncTask.class.getSimpleName();
+        SortOrder sortOrder;
+        Movie[] movies = null;
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
+        public InternetAsyncTaskLoader(@NonNull Context context, SortOrder sortOrder) {
+            super(context);
+            this.sortOrder = sortOrder;
         }
 
         @Override
-        protected Movie[] doInBackground(SortOrder... sortOrders) {
+        protected void onStartLoading() {
+            if (movies != null) {
+                deliverResult(movies);
+            } else {
+                forceLoad();
+            }
+        }
+
+        @Nullable
+        @Override
+        public Movie[] loadInBackground() {
             Movie[] movies = null;
-            String apiKey = getResources().getString(R.string.API_KEY_TMDB);
-            URL moviesRequestUrl = NetworkUtils.buildMoviesUrl(sortOrders[0], apiKey);
+            String apiKey = getContext().getResources().getString(R.string.API_KEY_TMDB);
+            URL moviesRequestUrl = NetworkUtils.buildMoviesUrl(sortOrder, apiKey);
             try {
                 String jsonMoviesResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
                 movies = JsonUtils.getMoviesFromJson(jsonMoviesResponse);
             } catch (Exception e) {
-                Log.e(TAG, e.getLocalizedMessage());
+                Log.e(InternetAsyncTaskLoader.class.getSimpleName(), e.getLocalizedMessage());
             }
             return movies;
         }
 
         @Override
-        protected void onPostExecute(Movie[] movies) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movies != null) {
-                showMoviesDataView();
-                mMoviesAdapter.setMoviesData(Arrays.asList(movies));
-            } else {
-                showInternetErrorMessage();
-            }
+        public void deliverResult(@Nullable Movie[] data) {
+            movies = data;
+            super.deliverResult(data);
         }
     }
+
 }
