@@ -50,7 +50,7 @@
                         android:id="@+id/movie_details_user_rating_tv"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_weight="3"
+                        android:layout_weight="2"
                         android:gravity="center"
                         android:textColor="@android:color/white"
                         android:textSize="56sp"
@@ -61,7 +61,7 @@
                         android:layout_width="0dp"
                         android:layout_height="42dp"
                         android:layout_gravity="center"
-                        android:layout_weight="2"
+                        android:layout_weight="1"
                         android:contentDescription="@string/star_favorite_button"
                         tools:src="@android:drawable/star_big_off" />
 
@@ -83,14 +83,20 @@
                     android:id="@+id/movie_details_bonus_info_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="horizontal">
+
 
                     <include
                         layout="@layout/reviews"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
 
-                    <include layout="@layout/trailers" />
+                    <include
+                        layout="@layout/trailers"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
 
                 </LinearLayout>
 
