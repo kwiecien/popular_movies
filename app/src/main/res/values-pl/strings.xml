@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Filmy</string>
+
+    <string name="list_item_movie_content_description">Plakat filmu</string>
+    <string name="background_image">Obraz tła</string>
+
+    <string name="error_no_internet">Wystąpił błąd\nCzy masz dostęp do Internetu?</string>
+    <string name="error_no_favorites">Nie posiadasz ulubionych filmów.\nOznacz gwiazdką ulubione filmy.</string>
+
+    <string name="sort_order">Kolejność sortowania</string>
+    <string name="pref_sort_label_popular">Popularne</string>
+    <string name="pref_sort_label_top_rated">Najlepiej oceniane</string>
+    <string name="pref_sort_label_favorites">Ulubione</string>
+    <string name="settings">Ustawienia</string>
+    <string name="default_sort_order">Domyślne sortowanie</string>
+    <string name="star_favorite_button">Oznacz film jako ulubiony</string>
+    <string name="reviews_label">Recenzje</string>
+    <string name="trailers_label">Trailery</string>
+    <string name="share_label">Udostępnij</string>
+</resources>
