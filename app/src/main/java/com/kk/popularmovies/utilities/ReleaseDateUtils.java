@@ -11,9 +11,10 @@ import java.util.Locale;
 
 public class ReleaseDateUtils {
 
-    private final static String TAG = ReleaseDateUtils.class.getSimpleName();
+    private static final String TAG = ReleaseDateUtils.class.getSimpleName();
 
     private ReleaseDateUtils() {
+        // Utility classes should not have public constructors
     }
 
     public static String getReleaseYear(Movie movie) {

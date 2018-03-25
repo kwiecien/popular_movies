@@ -1,6 +1,7 @@
 package com.kk.popularmovies.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 public class Movie implements Serializable {
@@ -50,7 +51,7 @@ public class Movie implements Serializable {
     }
 
     public byte[] getImage() {
-        return mImage;
+        return Arrays.copyOf(mImage, mImage.length);
     }
 
     public long getId() {
@@ -62,7 +63,7 @@ public class Movie implements Serializable {
     }
 
     public Date getReleaseDate() {
-        return mReleaseDate;
+        return new Date(mReleaseDate.getTime());
     }
 
     public double getUserRating() {
@@ -94,7 +95,7 @@ public class Movie implements Serializable {
         public Builder(long id, String title, Date releaseDate) {
             mId = id;
             mTitle = title;
-            mReleaseDate = releaseDate;
+            mReleaseDate = new Date(releaseDate.getTime());
         }
 
         public Movie build() {
@@ -107,7 +108,7 @@ public class Movie implements Serializable {
         }
 
         public Builder withImage(byte[] image) {
-            mImage = image;
+            mImage = Arrays.copyOf(image, image.length);
             return this;
         }
 
