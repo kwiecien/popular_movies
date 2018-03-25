@@ -200,9 +200,9 @@ public class MovieDetailsActivity extends AppCompatActivity
         for (Trailer trailer : trailers) {
             TextView trailerView = new TextView(this);
             createTrailerTextView(trailer, trailerView);
-            trailerView.setOnClickListener((View v) -> {
-                watchTrailer(trailer);
-            });
+            trailerView.setOnClickListener((View v) ->
+                    watchTrailer(trailer)
+            );
             mTrailersLl.addView(trailerView);
         }
     }
@@ -402,6 +402,10 @@ public class MovieDetailsActivity extends AppCompatActivity
                 mTrailerYtLink = buildYouTubeTrailerUrl(ofNullable(trailers).map(t -> t.get(0).getKey()).orElse(""));
             }
         }
+        stopCaringAboutLoadersAfterInitialLoad(loader);
+    }
+
+    private void stopCaringAboutLoadersAfterInitialLoad(@NonNull Loader loader) {
         getSupportLoaderManager().destroyLoader(loader.getId());
     }
 

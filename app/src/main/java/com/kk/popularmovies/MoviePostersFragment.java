@@ -212,8 +212,7 @@ public class MoviePostersFragment extends Fragment implements
         if (resultCode == MovieDetailsActivity.RESULT_DELETED && requestCode == REQUEST_CODE_ADAPTER_POSITION) {
             int adapterPosition = MovieDetailsActivity.wasMovieDeleted(data);
             if (mSortOrder == SortOrder.FAVORITES) {
-                mMoviesAdapter.getMovies().remove(adapterPosition);
-                mMoviesAdapter.notifyDataSetChanged();
+                Log.d(MoviePostersFragment.class.getSimpleName(), String.format("Deleted movie at position: %d", adapterPosition));
             }
         }
     }
@@ -260,11 +259,16 @@ public class MoviePostersFragment extends Fragment implements
     public void onLoadFinished(@NonNull Loader loader, Object data) {
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (loader.getId() == ID_FAVORITE_MOVIES_LOADER) {
-            showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList((Cursor) data));
+            if (wereFavoritesUpdatedAfterChoosingFromFavoritesScreen()) {
+                showMoviesOrError(MovieDbUtils.getFavoriteMoviesAsList((Cursor) data));
+            }
         } else {
             showMoviesOrError(Optional.ofNullable(data).map(movies -> Arrays.asList((Movie[]) movies)).orElse(null));
         }
-        getActivity().getSupportLoaderManager().destroyLoader(loader.getId());
+    }
+
+    private boolean wereFavoritesUpdatedAfterChoosingFromFavoritesScreen() {
+        return mSortOrder == SortOrder.FAVORITES;
     }
 
     @Override
