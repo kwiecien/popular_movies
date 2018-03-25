@@ -3,6 +3,7 @@ package com.kk.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -32,6 +33,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.kk.popularmovies.data.MovieContract;
+import com.kk.popularmovies.databinding.ActivityMovieDetailsBinding;
 import com.kk.popularmovies.enums.LoaderId;
 import com.kk.popularmovies.model.Movie;
 import com.kk.popularmovies.model.Review;
@@ -72,14 +74,6 @@ public class MovieDetailsActivity extends AppCompatActivity
     private static final int LOADER_MOVIE_REVIEWS = LoaderId.MovieDetails.MOVIE_REVIEWS;
     private static final int LOADER_MOVIE_TRAILERS = LoaderId.MovieDetails.MOVIE_TRAILERS;
     private static final float ALPHA = 0.10f;
-    @BindView(R.id.movie_details_title_tv)
-    TextView mMovieTv;
-    @BindView(R.id.movie_details_release_date_tv)
-    TextView mReleaseDateTv;
-    @BindView(R.id.movie_details_user_rating_tv)
-    TextView mUserRankingTv;
-    @BindView(R.id.movie_details_plot_synopsis_tv)
-    TextView mPlotSynopsisTv;
     @BindView(R.id.movie_details_star_iv)
     ImageView mStarTv;
     @BindView(R.id.movie_details_background_iv)
@@ -95,6 +89,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     private String mTransitionName;
     private Toast mToast;
     private String mTrailerYtLink;
+    private ActivityMovieDetailsBinding mBinding;
 
     public static Intent newIntent(Context packageContext, Movie movie) {
         Intent intent = new Intent(packageContext, MovieDetailsActivity.class);
@@ -113,6 +108,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
         ButterKnife.bind(this);
         ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
         supportPostponeEnterTransition();
@@ -140,11 +136,11 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     private void setViewsContent() {
-        mMovieTv.setText(mMovie.getTitle());
-        mReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
-        mUserRankingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
-        mPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
-        mBackgroundIv.setAlpha(ALPHA);
+        mBinding.movieDetailsTitleTv.setText(mMovie.getTitle());
+        mBinding.movieDetailsReleaseDateTv.setText(String.format(Locale.getDefault(), "(%s)", getReleaseYear(mMovie)));
+        mBinding.movieDetailsUserRatingTv.setText(String.format(Locale.getDefault(), "%1.1f", mMovie.getUserRating()));
+        mBinding.movieDetailsPlotSynopsisTv.setText(mMovie.getPlotSynopsis());
+        mBinding.movieDetailsBackgroundIv.setAlpha(ALPHA);
     }
 
     private void setCorrectStarImage() {

@@ -1,171 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ScrollView
+    <merge
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            tools:context="com.kk.popularmovies.MovieDetailsActivity">
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                tools:context="com.kk.popularmovies.MovieDetailsActivity">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="7"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="7"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/movie_details_title_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                            android:textColor="@android:color/white"
+                            tools:text="Movie's Title" />
+
+                        <TextView
+                            android:id="@+id/movie_details_release_date_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@android:color/white"
+                            tools:text="(1999)" />
+
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/movie_details_title_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                        android:id="@+id/movie_details_user_rating_tv"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3"
+                        android:gravity="center"
                         android:textColor="@android:color/white"
-                        tools:text="Movie's Title" />
+                        android:textSize="56sp"
+                        tools:text="8.7" />
 
-                    <TextView
-                        android:id="@+id/movie_details_release_date_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@android:color/white"
-                        tools:text="(1999)" />
+                    <ImageView
+                        android:id="@+id/movie_details_star_iv"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_gravity="center"
+                        android:layout_weight="2"
+                        android:contentDescription="@string/star_favorite_button"
+                        tools:src="@android:drawable/star_big_off" />
+
 
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/movie_details_user_rating_tv"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="3"
-                    android:gravity="center"
+                    android:id="@+id/movie_details_plot_synopsis_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-smallcaps"
+                    android:padding="16dp"
                     android:textColor="@android:color/white"
-                    android:textSize="56sp"
-                    tools:text="8.7" />
-
-                <ImageView
-                    android:id="@+id/movie_details_star_iv"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_gravity="center"
-                    android:layout_weight="2"
-                    android:contentDescription="@string/star_favorite_button"
-                    tools:src="@android:drawable/star_big_off" />
-
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/movie_details_plot_synopsis_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-smallcaps"
-                android:padding="16dp"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@+id/movie_details_user_rating_tv"
-                tools:text="Plot synopsis" />
-
-            <LinearLayout
-                android:id="@+id/movie_details_bonus_info_ll"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                    android:textSize="16sp"
+                    app:layout_constraintTop_toBottomOf="@+id/movie_details_user_rating_tv"
+                    tools:text="Plot synopsis" />
 
                 <LinearLayout
-                    android:id="@+id/movie_details_reviews_section"
+                    android:id="@+id/movie_details_bonus_info_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:background="@android:color/white" />
-
-                    <TextView
+                    <LinearLayout
+                        android:id="@+id/movie_details_reviews_section"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingBottom="1dp"
-                        android:paddingEnd="16dp"
-                        android:paddingStart="16dp"
-                        android:paddingTop="1dp"
-                        android:text="@string/reviews_label"
-                        android:textAllCaps="true" />
+                        android:orientation="vertical">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:background="@android:color/white" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:background="@android:color/white" />
 
-                    <android.support.v4.widget.NestedScrollView
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="1dp"
+                            android:paddingEnd="16dp"
+                            android:paddingStart="16dp"
+                            android:paddingTop="1dp"
+                            android:text="@string/reviews_label"
+                            android:textAllCaps="true" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:background="@android:color/white" />
+
+                        <android.support.v4.widget.NestedScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_marginBottom="16dp"
+                            android:layout_marginTop="16dp">
+
+                            <LinearLayout
+                                android:id="@+id/reviews_ll"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:paddingBottom="16dp"
+                                android:paddingLeft="16dp"
+                                android:paddingRight="16dp">
+
+                                <!-- Add reviews dynamically -->
+
+                            </LinearLayout>
+
+                        </android.support.v4.widget.NestedScrollView>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/movie_details_trailers_section"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:layout_marginBottom="16dp"
-                        android:layout_marginTop="16dp">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:background="@android:color/white" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="1dp"
+                            android:paddingEnd="16dp"
+                            android:paddingStart="16dp"
+                            android:paddingTop="1dp"
+                            android:text="@string/trailers_label"
+                            android:textAllCaps="true" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:background="@android:color/white" />
 
                         <LinearLayout
-                            android:id="@+id/reviews_ll"
+                            android:id="@+id/trailers_ll"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:paddingBottom="16dp"
-                            android:paddingLeft="16dp"
-                            android:paddingRight="16dp">
+                            android:padding="16dp">
 
-                            <!-- Add reviews dynamically -->
+                            <!-- Add trailers dynamically -->
 
                         </LinearLayout>
-
-                    </android.support.v4.widget.NestedScrollView>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/movie_details_trailers_section"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:background="@android:color/white" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="1dp"
-                        android:paddingEnd="16dp"
-                        android:paddingStart="16dp"
-                        android:paddingTop="1dp"
-                        android:text="@string/trailers_label"
-                        android:textAllCaps="true" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:background="@android:color/white" />
-
-                    <LinearLayout
-                        android:id="@+id/trailers_ll"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <!-- Add trailers dynamically -->
 
                     </LinearLayout>
 
@@ -173,15 +177,13 @@
 
             </LinearLayout>
 
-        </LinearLayout>
+        </ScrollView>
 
-    </ScrollView>
+        <ImageView
+            android:id="@+id/movie_details_background_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/background_image" />
 
-    <ImageView
-        android:id="@+id/movie_details_background_iv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="@string/background_image" />
-
-</merge>
-
+    </merge>
+</layout>
