@@ -155,6 +155,7 @@ public class MoviePostersFragment extends Fragment implements
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void initLoader(int loaderId) {
         getActivity().getSupportLoaderManager().initLoader(loaderId, null, this);
     }
@@ -278,7 +279,7 @@ public class MoviePostersFragment extends Fragment implements
 
     public static class InternetAsyncTaskLoader extends AsyncTaskLoader<Movie[]> {
 
-        SortOrder sortOrder;
+        private final SortOrder sortOrder;
 
         public InternetAsyncTaskLoader(@NonNull Context context, SortOrder sortOrder) {
             super(context);

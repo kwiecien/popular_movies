@@ -126,7 +126,7 @@ public class MovieProvider extends ContentProvider {
                     "movie_id=?",
                     new String[]{movieId});
         } else {
-            throwUnknownUriException(uri);
+            throw throwUnknownUriException(uri);
         }
         if (moviesDeleted > 0) {
             Optional.ofNullable(getContext()).map(Context::getContentResolver).ifPresent(cr -> cr.notifyChange(uri, null));

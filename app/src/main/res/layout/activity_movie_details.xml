@@ -101,7 +101,7 @@
                         android:paddingEnd="16dp"
                         android:paddingStart="16dp"
                         android:paddingTop="1dp"
-                        android:text="Reviews"
+                        android:text="@string/reviews_label"
                         android:textAllCaps="true" />
 
                     <View
@@ -150,7 +150,7 @@
                         android:paddingEnd="16dp"
                         android:paddingStart="16dp"
                         android:paddingTop="1dp"
-                        android:text="Trailers"
+                        android:text="@string/trailers_label"
                         android:textAllCaps="true" />
 
                     <View

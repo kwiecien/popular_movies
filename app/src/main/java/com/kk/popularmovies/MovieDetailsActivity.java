@@ -130,8 +130,13 @@ public class MovieDetailsActivity extends AppCompatActivity
         if (mMovie != null) {
             setViewsContent();
             setOnClickListeners();
-            getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
+            initLoaderMovieById();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initLoaderMovieById() {
+        getSupportLoaderManager().initLoader(LOADER_MOVIE_BY_ID, null, this);
     }
 
     private void setViewsContent() {
@@ -212,7 +217,9 @@ public class MovieDetailsActivity extends AppCompatActivity
         trailerView.setText(trailer.getName());
         trailerView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         Drawable play = getDrawable(android.R.drawable.ic_media_play);
-        play.setBounds(new Rect(0, 0, 100, 100));
+        if (play != null) {
+            play.setBounds(new Rect(0, 0, 100, 100));
+        }
         trailerView.setCompoundDrawablesRelative(play, null, null, null);
     }
 
@@ -263,7 +270,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                 .load(mMovie.getImageThumbnail())
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
-                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+                    public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
                         mImage = MovieDbUtils.getBitmapAsByteArray(resource);
                         Uri uri = insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
                         if (uri != null) {
@@ -410,7 +417,17 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     private void fetchReviewsAndTrailers() {
+        initLoaderMovieReviews();
+        initLoadersMovieTrailers();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initLoaderMovieReviews() {
         getSupportLoaderManager().initLoader(LOADER_MOVIE_REVIEWS, null, this);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initLoadersMovieTrailers() {
         getSupportLoaderManager().initLoader(LOADER_MOVIE_TRAILERS, null, this);
     }
 

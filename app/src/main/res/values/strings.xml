@@ -19,4 +19,7 @@
     <string name="sort_order_key">sort_order_key</string>
     <string name="default_sort_order">Default Sort Order</string>
     <string name="star_favorite_button">Star-favorite button</string>
+    <string name="reviews_label">Reviews</string>
+    <string name="trailers_label">Trailers</string>
+    <string name="share_label">Share</string>
 </resources>
