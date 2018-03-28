@@ -87,7 +87,7 @@ public class MoviePostersFragment extends Fragment implements
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         MenuItem sortOrderMenuItem = menu.findItem(R.id.sort_order_item);
-        sortOrderMenuItem.setTitle(mSortOrder.getStringRepresentation());
+        sortOrderMenuItem.setTitle(getString(mSortOrder.getResourceId()));
     }
 
     private void findViews(View rootView) {
@@ -188,7 +188,7 @@ public class MoviePostersFragment extends Fragment implements
         switch (item.getItemId()) {
             case R.id.sort_order_item:
                 mSortOrder = mSortOrder.swap();
-                item.setTitle(mSortOrder.getStringRepresentation());
+                item.setTitle(getString(mSortOrder.getResourceId()));
                 loadMoviesData();
                 return true;
             case R.id.action_settings:

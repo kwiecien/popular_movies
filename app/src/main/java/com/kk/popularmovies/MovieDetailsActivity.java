@@ -402,7 +402,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                 @SuppressWarnings("unchecked")
                 List<Trailer> trailers = (List<Trailer>) data;
                 setTrailers(trailers);
-                mTrailerYtLink = buildYouTubeTrailerUrl(ofNullable(trailers).map(t -> t.get(0).getKey()).orElse(""));
+                mTrailerYtLink = buildYouTubeTrailerUrl(getTrailerKey(trailers));
             }
         }
         stopCaringAboutLoadersAfterInitialLoad(loader);
@@ -410,6 +410,14 @@ public class MovieDetailsActivity extends AppCompatActivity
 
     private void stopCaringAboutLoadersAfterInitialLoad(@NonNull Loader loader) {
         getSupportLoaderManager().destroyLoader(loader.getId());
+    }
+
+    @NonNull
+    private String getTrailerKey(List<Trailer> trailers) {
+        return ofNullable(trailers)
+                .filter(t -> !t.isEmpty())
+                .map(t -> t.get(0).getKey())
+                .orElse("");
     }
 
     private void fetchReviewsAndTrailers() {
