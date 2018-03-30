@@ -256,7 +256,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     private void removeMovieFromFavorites() {
         int count = deleteMovieFromDb(this, mMovie);
         if (count > 0) {
-            makeToast("Removed from favorites");
+            makeToast(getString(R.string.removed_from_favorites));
         }
     }
 
@@ -270,7 +270,7 @@ public class MovieDetailsActivity extends AppCompatActivity
                         mImage = MovieDbUtils.getBitmapAsByteArray(resource);
                         Uri uri = insertMovieToDb(MovieDetailsActivity.this, mMovie, mImage);
                         if (uri != null) {
-                            makeToast("Added to favorites");
+                            makeToast(getString(R.string.added_to_favorites));
                         }
                     }
                 });

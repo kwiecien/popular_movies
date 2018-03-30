@@ -22,4 +22,7 @@
     <string name="reviews_label">Reviews</string>
     <string name="trailers_label">Trailers</string>
     <string name="share_label">Share</string>
+    <string name="failed_to_insert">Failed to insert row into URI: </string>
+    <string name="removed_from_favorites">Removed from favorites</string>
+    <string name="added_to_favorites">Added to favorites</string>
 </resources>

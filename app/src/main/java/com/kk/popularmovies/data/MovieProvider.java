@@ -12,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.kk.popularmovies.R;
+
 import java.util.Optional;
 
 import static com.kk.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
@@ -105,7 +107,7 @@ public class MovieProvider extends ContentProvider {
             if (id > 0) {
                 returnUri = ContentUris.withAppendedId(CONTENT_URI, id);
             } else {
-                Toast.makeText(getContext(), "Failed to insert row into " + uri, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), getContext().getString(R.string.failed_to_insert) + uri, Toast.LENGTH_LONG).show();
             }
         } else {
             throw throwUnknownUriException(uri);
