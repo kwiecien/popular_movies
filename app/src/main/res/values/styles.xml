@@ -8,6 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:windowContentTransitions">true</item>
+        <item name="android:textColorSecondary">@color/abc_secondary_text_material_light</item>
     </style>
 
 </resources>

@@ -74,8 +74,8 @@ public class MovieDetailsActivity extends AppCompatActivity
     private static final int LOADER_MOVIE_REVIEWS = LoaderId.MovieDetails.MOVIE_REVIEWS;
     private static final int LOADER_MOVIE_TRAILERS = LoaderId.MovieDetails.MOVIE_TRAILERS;
     private static final float ALPHA = 0.10f;
-    @BindView(R.id.movie_details_star_iv)
-    ImageView mStarTv;
+    @BindView(R.id.movie_details_fab)
+    ImageView mStarFab;
     @BindView(R.id.movie_details_background_iv)
     ImageView mBackgroundIv;
     @BindView(R.id.reviews_ll)
@@ -145,9 +145,9 @@ public class MovieDetailsActivity extends AppCompatActivity
 
     private void setCorrectStarImage() {
         if (mFavorite) {
-            mStarTv.setImageResource(android.R.drawable.star_big_on);
+            mStarFab.setImageResource(android.R.drawable.star_big_on);
         } else {
-            mStarTv.setImageResource(android.R.drawable.star_big_off);
+            mStarFab.setImageResource(android.R.drawable.star_big_off);
         }
     }
 
@@ -231,7 +231,7 @@ public class MovieDetailsActivity extends AppCompatActivity
     }
 
     private void setOnClickListeners() {
-        mStarTv.setOnClickListener(
+        mStarFab.setOnClickListener(
                 v -> onStarClicked()
         );
     }
@@ -244,7 +244,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             saveMovieAsFavorite();
             setFavoriteResult(RESULT_NOT_DELETED, mAdapterPosition);
         }
-        mStarTv.setImageResource(swapStar());
+        mStarFab.setImageResource(swapStar());
     }
 
     private void setFavoriteResult(int resultCode, int adapterPosition) {

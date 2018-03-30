@@ -25,7 +25,7 @@
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="7"
+                        android:layout_weight="9"
                         android:orientation="vertical"
                         android:padding="16dp">
 
@@ -46,25 +46,30 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/movie_details_user_rating_tv"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="3"
+                    <android.support.constraint.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="56sp"
-                        tools:text="8.7" />
+                        android:padding="8dp">
 
-                    <ImageView
-                        android:id="@+id/movie_details_star_iv"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_gravity="center"
-                        android:layout_weight="2"
-                        android:contentDescription="@string/star_favorite_button"
-                        tools:src="@android:drawable/star_big_off" />
+                        <TextView
+                            android:id="@+id/movie_details_user_rating_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="56sp"
+                            tools:text="8.7" />
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="/10"
+                            android:textSize="28sp"
+                            app:layout_constraintBaseline_toBaselineOf="@id/movie_details_user_rating_tv"
+                            app:layout_constraintLeft_toRightOf="@id/movie_details_user_rating_tv" />
+
+                    </android.support.constraint.ConstraintLayout>
 
                 </LinearLayout>
 
@@ -97,6 +102,15 @@
             </LinearLayout>
 
         </ScrollView>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/movie_details_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/star_favorite_button"
+            tools:src="@android:drawable/star_big_off" />
 
         <ImageView
             android:id="@+id/movie_details_background_iv"
