@@ -117,6 +117,7 @@ public class MoviePostersFragment extends Fragment implements
     private void showMoviesDataView() {
         mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
+        mRecyclerView.smoothScrollToPosition(0);
     }
 
     private SortOrder retrieveDefaultSortOrder() {
