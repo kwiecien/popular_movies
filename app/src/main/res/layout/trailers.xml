@@ -5,25 +5,13 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@android:color/white" />
+    <View style="@style/sectionDivider" />
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="1dp"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
-        android:paddingTop="1dp"
-        android:text="@string/trailers_label"
-        android:textAllCaps="true" />
+        style="@style/headerRow"
+        android:text="@string/trailers_label" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@android:color/white" />
+    <View style="@style/sectionDivider" />
 
     <LinearLayout
         android:id="@+id/trailers_ll"
