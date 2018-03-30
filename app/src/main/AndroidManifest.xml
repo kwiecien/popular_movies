@@ -20,7 +20,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MovieDetailsActivity" />
+        <activity
+            android:name=".MovieDetailsActivity"
+            android:parentActivityName=".MoviePostersActivity"
+            android:theme="@style/AppTheme.MovieDetails">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MoviePostersActivity" />
+        </activity>
         <activity
             android:name=".SettingsActivity"
             android:parentActivityName=".MoviePostersActivity">

@@ -110,7 +110,6 @@ public class MovieDetailsActivity extends AppCompatActivity
         setContentView(R.layout.activity_movie_details);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
         ButterKnife.bind(this);
-        ofNullable(getSupportActionBar()).ifPresent(sab -> sab.setDisplayHomeAsUpEnabled(true));
         supportPostponeEnterTransition();
 
         Bundle extras;
@@ -179,7 +178,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         TextView authorView = new TextView(this);
         authorView.setText(review.getAuthor());
         authorView.setTypeface(Typeface.create("sans-serif-smallcaps", Typeface.NORMAL));
-        authorView.setTextColor(getColor(android.R.color.white));
+        authorView.setTextColor(getColor(R.color.primary_text));
         authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         return authorView;
     }

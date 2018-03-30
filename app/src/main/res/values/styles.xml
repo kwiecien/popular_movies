@@ -11,9 +11,19 @@
         <item name="android:actionMenuTextColor">@color/colorAccent</item>
     </style>
 
+    <style name="ActionBar.Solid.MovieDetails.NoTitle" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="displayOptions">useLogo|showHome</item>
+        <item name="logo">@drawable/ic_logo</item>
+    </style>
+
+    <style name="AppTheme.MovieDetails" parent="@style/AppTheme">
+        <item name="actionBarStyle">@style/ActionBar.Solid.MovieDetails.NoTitle</item>
+    </style>
+
     <style name="headerRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:color">@color/primary_text</item>
         <item name="android:paddingTop">1dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:paddingStart">16dp</item>

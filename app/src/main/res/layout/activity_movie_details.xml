@@ -34,14 +34,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-                            android:textColor="@android:color/white"
+                            android:textColor="@color/primary_text"
                             tools:text="Movie's Title" />
 
                         <TextView
                             android:id="@+id/movie_details_release_date_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@android:color/white"
+                            android:textColor="@color/secondary_text"
                             tools:text="(1999)" />
 
                     </LinearLayout>
@@ -50,21 +50,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:padding="8dp">
+                        android:paddingRight="16dp"
+                        android:paddingTop="16dp">
 
                         <TextView
                             android:id="@+id/movie_details_user_rating_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center"
-                            android:textColor="@android:color/white"
+                            android:textColor="@color/primary_text"
                             android:textSize="56sp"
                             tools:text="8.7" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="/10"
+                            android:text="@string/out_of_ten"
+                            android:textColor="@color/secondary_text"
                             android:textSize="28sp"
                             app:layout_constraintBaseline_toBaselineOf="@id/movie_details_user_rating_tv"
                             app:layout_constraintLeft_toRightOf="@id/movie_details_user_rating_tv" />
@@ -79,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-smallcaps"
                     android:padding="16dp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/primary_text"
                     android:textSize="16sp"
                     app:layout_constraintTop_toBottomOf="@+id/movie_details_user_rating_tv"
                     tools:text="Plot synopsis" />
