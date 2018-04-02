@@ -211,6 +211,7 @@ public class MovieDetailsActivity extends AppCompatActivity
         trailerView.setPadding(0, 0, 32, 32);
         trailerView.setText(trailer.getName());
         trailerView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        trailerView.setBackground(getDrawable(R.drawable.touch_selector));
         Drawable play = getDrawable(android.R.drawable.ic_media_play);
         if (play != null) {
             play.setBounds(new Rect(0, 0, 100, 100));
