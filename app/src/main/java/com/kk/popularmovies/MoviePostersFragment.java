@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -49,11 +50,13 @@ public class MoviePostersFragment extends Fragment implements
 
     private static final String EXTRA_MOVIES = "com.kk.popularmovies.extra_movies";
     private static final String EXTRA_SORT_ORDER = "com.kk.popularmovies.extra_sort_order";
+    private static final String EXTRA_RECYCLER_VIEW = "com.kk.popularmovies.extra_recycler_view_position";
     private static final int ID_FAVORITE_MOVIES_LOADER = LoaderId.MoviePosters.FAVORITE_MOVIES;
     private static final int ID_TOP_RATED_MOVIES_LOADER = LoaderId.MoviePosters.TOP_RATED_MOVIES;
     private static final int ID_POPULAR_MOVIES_LOADER = LoaderId.MoviePosters.POPULAR_MOVIES;
     private static final int REQUEST_CODE_ADAPTER_POSITION = 1;
     private MoviesAdapter mMoviesAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView mRecyclerView;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessage;
@@ -76,11 +79,17 @@ public class MoviePostersFragment extends Fragment implements
             List<Movie> movies = (List<Movie>) savedInstanceState.getSerializable(EXTRA_MOVIES);
             mSortOrder = (SortOrder) savedInstanceState.getSerializable(EXTRA_SORT_ORDER);
             showMoviesOrError(movies);
+            restoreRecyclerViewPosition(savedInstanceState);
         } else {
             mSortOrder = retrieveDefaultSortOrder();
             loadMoviesData();
         }
         return rootView;
+    }
+
+    private void restoreRecyclerViewPosition(@NonNull Bundle savedInstanceState) {
+        Parcelable savedLoaderManagerState = savedInstanceState.getParcelable(EXTRA_RECYCLER_VIEW);
+        mLayoutManager.onRestoreInstanceState(savedLoaderManagerState);
     }
 
     @Override
@@ -98,8 +107,8 @@ public class MoviePostersFragment extends Fragment implements
 
     private void prepareRecyclerView() {
         int spanCount = calculateNumberOfColumns(getActivity());
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), spanCount);
-        mRecyclerView.setLayoutManager(layoutManager);
+        mLayoutManager = new GridLayoutManager(getActivity(), spanCount);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(false);
 
         mMoviesAdapter = new MoviesAdapter(this, getContext());
@@ -117,7 +126,6 @@ public class MoviePostersFragment extends Fragment implements
     private void showMoviesDataView() {
         mErrorMessage.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
-        mRecyclerView.smoothScrollToPosition(0);
     }
 
     private SortOrder retrieveDefaultSortOrder() {
@@ -223,6 +231,7 @@ public class MoviePostersFragment extends Fragment implements
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(EXTRA_MOVIES, mMoviesAdapter.getMovies() != null ? new ArrayList<>(mMoviesAdapter.getMovies()) : null);
         outState.putSerializable(EXTRA_SORT_ORDER, mSortOrder);
+        outState.putParcelable(EXTRA_RECYCLER_VIEW, mLayoutManager.onSaveInstanceState());
         super.onSaveInstanceState(outState);
     }
 
