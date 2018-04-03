@@ -225,8 +225,10 @@ public class MovieDetailsActivity extends AppCompatActivity
         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(buildYouTubeTrailerUrl(trailer.getKey())));
         if (appIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(appIntent);
-        } else {
+        } else if (webIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(webIntent);
+        } else {
+            Toast.makeText(this, R.string.no_yt_and_internet_browser, Toast.LENGTH_LONG).show();
         }
     }
 

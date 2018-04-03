@@ -26,5 +26,6 @@
     <string name="removed_from_favorites">Removed from favorites</string>
     <string name="added_to_favorites">Added to favorites</string>
     <string name="out_of_ten" translatable="false">/10</string>
+    <string name="no_yt_and_internet_browser">Please install YouTube or Internet browser</string>
 
 </resources>
