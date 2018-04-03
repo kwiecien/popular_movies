@@ -64,7 +64,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="/10"
+                            android:text="@string/out_of_ten"
                             android:textSize="28sp"
                             app:layout_constraintBaseline_toBaselineOf="@id/movie_details_user_rating_tv"
                             app:layout_constraintLeft_toRightOf="@id/movie_details_user_rating_tv" />
@@ -89,6 +89,7 @@
                     android:id="@+id/movie_details_bonus_info_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
 
                     <include
@@ -122,7 +123,9 @@
             android:id="@+id/movie_details_background_iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="@string/background_image" />
+            android:contentDescription="@string/background_image"
+            android:scaleType="centerCrop" />
 
     </merge>
+
 </layout>

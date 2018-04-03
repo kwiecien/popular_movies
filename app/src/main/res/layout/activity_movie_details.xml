@@ -50,7 +50,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:paddingRight="16dp"
+                        android:paddingEnd="16dp"
                         android:paddingTop="16dp">
 
                         <TextView
@@ -118,7 +118,9 @@
             android:id="@+id/movie_details_background_iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="@string/background_image" />
+            android:contentDescription="@string/background_image"
+            android:scaleType="centerCrop" />
 
     </merge>
+
 </layout>
