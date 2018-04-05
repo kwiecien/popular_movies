@@ -15,7 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
-public class NetworkUtils {
+public final class NetworkUtils {
     private static final String TAG = NetworkUtils.class.getSimpleName();
     private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     private static final String API_KEY_PARAM = "api_key";

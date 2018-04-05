@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.kk.popularmovies.utilities.ReleaseDateUtils.parseDate;
 
-public class JsonUtils {
+public final class JsonUtils {
     private static final String VOTE_AVERAGE = "vote_average";
     private static final String ID = "id";
     private static final String TITLE = "title";
