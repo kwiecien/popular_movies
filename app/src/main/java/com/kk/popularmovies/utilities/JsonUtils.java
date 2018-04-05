@@ -28,6 +28,7 @@ public final class JsonUtils {
     private static final String KEY = "key";
 
     private JsonUtils() {
+        throw new AssertionError();
     }
 
     public static Movie[] getMoviesFromJson(String jsonMoviesResponse) throws JSONException {

@@ -15,6 +15,7 @@ import java.util.List;
 public final class MovieDbUtils {
 
     private MovieDbUtils() {
+        throw new AssertionError();
     }
 
     @NonNull

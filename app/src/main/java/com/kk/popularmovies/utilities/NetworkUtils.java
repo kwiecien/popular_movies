@@ -23,6 +23,7 @@ public final class NetworkUtils {
     private static final String REVIEWS_PARAM = "reviews";
 
     private NetworkUtils() {
+        throw new AssertionError();
     }
 
     public static URL buildMoviesUrl(SortOrder sortOrder, String apiKey) {
